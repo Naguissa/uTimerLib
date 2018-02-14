@@ -1,0 +1,3 @@
+AVR Timer2:
+ - https://hetpro-store.com/TUTORIALES/arduino-timer/
+ - https://playground.arduino.cc/Main/TimerPWMCheatsheet
