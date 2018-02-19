@@ -20,19 +20,24 @@
 	#define UTIMERLIB_TYPE_TIMEOUT 1
 	#define UTIMERLIB_TYPE_INTERVAL 2
 
+	#ifdef _VARIANT_ARDUINO_STM32_
+		#include "HardwareTimer.h"
+		extern HardwareTimer Timer3;
+	#endif
 
 	class uTimerLib {
 		public:
 			uTimerLib();
-			void setInterval_us(void * (), unsigned long int);
-			void setInterval_s(void * (), unsigned long int);
-			int setTimeout_us(void * (), unsigned long int);
-			int setTimeout_s(void * (), unsigned long int);
+			void setInterval_us(void (*) (), unsigned long int);
+			void setInterval_s(void (*) (), unsigned long int);
+			int setTimeout_us(void (*) (), unsigned long int);
+			int setTimeout_s(void (*) (), unsigned long int);
 			void clearTimer();
 
-			void _interruptHandler();
-
-		private:
+			/**
+			 * Because several compatibility issues -specially STM32- we need to put
+			 * these as public, but it should be private. Maybe in future upgrades...
+			 */
 			unsigned long int _overflows = 0;
 			unsigned char _remaining = 0;
 			unsigned long int __overflows = 0;
@@ -42,6 +47,10 @@
 
 			void _loadRemaining();
 
+		private:
+			#ifdef _VARIANT_ARDUINO_STM32_
+				bool _toInit = true;
+			#endif
 			void _attachInterrupt_us(unsigned long int);
 			void _attachInterrupt_s(unsigned long int);
 
@@ -49,6 +58,9 @@
 	};
 
 	extern uTimerLib TimerLib;
+	#ifdef _VARIANT_ARDUINO_STM32_
+		void uTimerLib_interruptHandle();
+	#endif
 
 #endif
 

@@ -9,6 +9,12 @@
 #include "Arduino.h"
 #include "uTimerLib.h"
 
+#ifndef LED_BUILTIN
+	// change to fit your needs
+	#define LED_BUILTIN 13
+#endif
+
+
 
 
 bool status = 0;

@@ -2,7 +2,8 @@
  * Tiny and cross-device compatible timer library.
  *
  * Timers used by microcontroller
- *	Atmel AVR: Timer2
+ *	Atmel AVR:	Timer2 (3rd timer)
+ *  STM32:		Timer3 (3rd timer)
  *
  * @copyright Naguissa
  * @author Naguissa
@@ -10,16 +11,18 @@
  * @version 0.1.0
  * @created 2018-01-27
  */
-#include <Arduino.h>
 #include "uTimerLib.h"
-
 
 /**
  * Constructor
  *
  * Nothing to do here
  */
-uTimerLib::uTimerLib() {}
+uTimerLib::uTimerLib() {
+#ifdef _VARIANT_ARDUINO_STM32_
+	clearTimer();
+#endif
+}
 
 /**
  * Attaches a callback function to be executed each us microseconds
@@ -27,7 +30,7 @@ uTimerLib::uTimerLib() {}
  * @param	void*()				cb		Callback function to be called
  * @param	unsigned long int	us		Interval in microseconds
  */
-void uTimerLib::setInterval_us(void * cb(), unsigned long int us) {
+void uTimerLib::setInterval_us(void (* cb)(), unsigned long int us) {
 	clearTimer();
 	_cb = cb;
 	_type = UTIMERLIB_TYPE_INTERVAL;
@@ -41,7 +44,7 @@ void uTimerLib::setInterval_us(void * cb(), unsigned long int us) {
  * @param	void*()				cb		Callback function to be called
  * @param	unsigned long int	us		Timeout in microseconds
  */
-int uTimerLib::setTimeout_us(void * cb(), unsigned long int us) {
+int uTimerLib::setTimeout_us(void (* cb)(), unsigned long int us) {
 	clearTimer();
 	_cb = cb;
 	_type = UTIMERLIB_TYPE_TIMEOUT;
@@ -55,7 +58,7 @@ int uTimerLib::setTimeout_us(void * cb(), unsigned long int us) {
  * @param	void*()				cb		Callback function to be called
  * @param	unsigned long int	s		Interval in seconds
  */
-void uTimerLib::setInterval_s(void * cb(), unsigned long int s) {
+void uTimerLib::setInterval_s(void (* cb)(), unsigned long int s) {
 	clearTimer();
 	_cb = cb;
 	_type = UTIMERLIB_TYPE_INTERVAL;
@@ -69,7 +72,7 @@ void uTimerLib::setInterval_s(void * cb(), unsigned long int s) {
  * @param	void*()				cb		Callback function to be called
  * @param	unsigned long int	s		Timeout in seconds
  */
-int uTimerLib::setTimeout_s(void * cb(), unsigned long int s) {
+int uTimerLib::setTimeout_s(void (* cb)(), unsigned long int s) {
 	clearTimer();
 	_cb = cb;
 	_type = UTIMERLIB_TYPE_TIMEOUT;
@@ -163,6 +166,23 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 
 		sei();
 	#endif
+
+	// STM32, all variants
+	#ifdef _VARIANT_ARDUINO_STM32_
+		Timer3.setMode(TIMER_CH1, TIMER_OUTPUTCOMPARE);
+		Timer3.setPeriod(us);				// in microseconds
+		Timer3.setCompare(TIMER_CH1, 1);
+		__overflows = _overflows = 1;
+		__remaining = _remaining = 0;
+		if (_toInit) {
+			_toInit = false;
+			Timer3.attachInterrupt(TIMER_CH1, uTimerLib_interruptHandle);
+		}
+	    Timer3.refresh();
+		Timer3.resume();
+	#endif
+
+
 }
 
 
@@ -174,7 +194,7 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
  * @param	unsigned long int	s		Desired timing in seconds
  */
 void uTimerLib::_attachInterrupt_s(unsigned long int s) {
-	// Using longest mode from _ms function
+	// Arduino AVR
 	#ifdef ARDUINO_ARCH_AVR
 		unsigned char CSMask = 0;
 		// For this notes, we asume 16MHz CPU. We recalculate 's' if not:
@@ -185,6 +205,7 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 		cli();
 
 		/*
+		Using longest mode from _ms function
 		CS22	CS21	CS20	Freq		Divisor		Base Delay	Overflow delay
 		  1		  1		  1		15.625KHz	1024		    64us			16384us
 		*/
@@ -202,7 +223,6 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 		} else {
 			_remaining = 256 - round(((s * 1000000) % 16384) / 64);
 		}
-
 
 		__overflows = _overflows;
 		__remaining = _remaining;
@@ -222,6 +242,23 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 
 		sei();
 	#endif
+
+
+	// STM32, all variants
+	#ifdef _VARIANT_ARDUINO_STM32_
+		Timer3.setMode(TIMER_CH1, TIMER_OUTPUTCOMPARE);
+		Timer3.setPeriod((unsigned long int) 1000000);			// 1s, in microseconds
+		Timer3.setCompare(TIMER_CH1, 1);
+		__overflows = _overflows = s;
+		__remaining = _remaining = 0;
+		if (_toInit) {
+			_toInit = false;
+			Timer3.attachInterrupt(TIMER_CH1, uTimerLib_interruptHandle);
+		}
+	    Timer3.refresh();
+		Timer3.resume();
+	#endif
+
 }
 
 
@@ -235,6 +272,8 @@ void uTimerLib::_loadRemaining() {
 	#ifdef ARDUINO_ARCH_AVR
 		TCNT2 = _remaining;
 	#endif
+
+	// STM32: Not needed
 }
 
 /**
@@ -243,13 +282,20 @@ void uTimerLib::_loadRemaining() {
  * Note: This is device-dependant
  */
 void uTimerLib::clearTimer() {
+	_type = UTIMERLIB_TYPE_OFF;
+
 	#ifdef ARDUINO_ARCH_AVR
 		TIMSK2 &= ~(1 << TOIE2);		// Disable overflow interruption when 0
 		SREG = (SREG & 0b01111111); // Disable interrupts without modifiying other interrupts
 	#endif
-	_type = UTIMERLIB_TYPE_OFF;
+
+	#ifdef _VARIANT_ARDUINO_STM32_
+		Timer3.pause();
+	#endif
 }
 
+// Preinstantiate Object
+uTimerLib TimerLib = uTimerLib();
 
 
 /**
@@ -258,37 +304,33 @@ void uTimerLib::clearTimer() {
  * As timers doesn't give us enougth flexibility for large timings,
  * this function implements oferflow control to offer user desired timings.
  */
-void uTimerLib::_interruptHandler() {
-	extern uTimerLib TimerLib;
-
-	if (_type == UTIMERLIB_TYPE_OFF) { // Should not happen
+void uTimerLib_interruptHandle() {
+	if (TimerLib._type == UTIMERLIB_TYPE_OFF) { // Should not happen
 		return;
 	}
-	if (_overflows > 0) {
-		_overflows--;
+	if (TimerLib._overflows > 0) {
+		TimerLib._overflows--;
 	}
-	if (_overflows == 0 && _remaining > 0) {
+	if (TimerLib._overflows == 0 && TimerLib._remaining > 0) {
 		// Load remaining count to counter
-		_loadRemaining();
+		TimerLib._loadRemaining();
 		// And clear remaining count
-		_remaining = 0;
-	} else if (_overflows == 0 && _remaining == 0) {
-		if (_type == UTIMERLIB_TYPE_TIMEOUT) {
-			clearTimer();
-		} else if (_type == UTIMERLIB_TYPE_INTERVAL) {
-			if (__overflows == 0) {
-				_loadRemaining();
+		TimerLib._remaining = 0;
+	} else if (TimerLib._overflows == 0 && TimerLib._remaining == 0) {
+		if (TimerLib._type == UTIMERLIB_TYPE_TIMEOUT) {
+			TimerLib.clearTimer();
+		} else if (TimerLib._type == UTIMERLIB_TYPE_INTERVAL) {
+			if (TimerLib.__overflows == 0) {
+				TimerLib._loadRemaining();
 			} else {
-				_overflows = __overflows;
-				_remaining = __remaining;
+				TimerLib._overflows = TimerLib.__overflows;
+				TimerLib._remaining = TimerLib.__remaining;
 			}
 		}
-		_cb();
+		TimerLib._cb();
 	}
 }
 
-// Preinstantiate Object
-uTimerLib TimerLib = uTimerLib();
 
 
 
@@ -301,7 +343,7 @@ uTimerLib TimerLib = uTimerLib();
 #ifdef ARDUINO_ARCH_AVR
 	// Arduino AVR
 	ISR(TIMER2_OVF_vect) {
-		TimerLib._interruptHandler();
+		uTimerLib_interruptHandle();
 	}
 #endif
 
