@@ -13,12 +13,14 @@ While being in 0.X.Y version, library is still in development.
 
 Currently suported architectures:
  - AVR
+ - STM32
 
 ## Device timer usage ##
 
 Depending on wich architecture this library uses one or another device timer. Take in mind this because can caause conflicts with other libraries:
 
- - AVR: Timer2
+ - AVR: Timer2 (3rd timer)
+ - STM32: Timer3 (3rd timer)
 
 ## Usage ##
 
