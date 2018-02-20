@@ -13,15 +13,20 @@
  */
 #include "uTimerLib.h"
 
+#ifdef _VARIANT_ARDUINO_STM32_
+	uTimerLib *uTimerLib::_instance = NULL;
+#endif
+
 /**
  * Constructor
  *
  * Nothing to do here
  */
 uTimerLib::uTimerLib() {
-#ifdef _VARIANT_ARDUINO_STM32_
-	clearTimer();
-#endif
+	#ifdef _VARIANT_ARDUINO_STM32_
+		_instance = this;
+		clearTimer();
+	#endif
 }
 
 /**
@@ -176,7 +181,7 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 		__remaining = _remaining = 0;
 		if (_toInit) {
 			_toInit = false;
-			Timer3.attachInterrupt(TIMER_CH1, uTimerLib_interruptHandle);
+			Timer3.attachInterrupt(TIMER_CH1, uTimerLib::interrupt);
 		}
 	    Timer3.refresh();
 		Timer3.resume();
@@ -253,7 +258,7 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 		__remaining = _remaining = 0;
 		if (_toInit) {
 			_toInit = false;
-			Timer3.attachInterrupt(TIMER_CH1, uTimerLib_interruptHandle);
+			Timer3.attachInterrupt(TIMER_CH1, uTimerLib::interrupt);
 		}
 	    Timer3.refresh();
 		Timer3.resume();
@@ -294,42 +299,51 @@ void uTimerLib::clearTimer() {
 	#endif
 }
 
-// Preinstantiate Object
-uTimerLib TimerLib = uTimerLib();
-
-
 /**
  * Internal intermediate function to control timer interrupts
  *
  * As timers doesn't give us enougth flexibility for large timings,
  * this function implements oferflow control to offer user desired timings.
  */
-void uTimerLib_interruptHandle() {
-	if (TimerLib._type == UTIMERLIB_TYPE_OFF) { // Should not happen
+void uTimerLib::_interrupt() {
+	if (_type == UTIMERLIB_TYPE_OFF) { // Should not happen
 		return;
 	}
-	if (TimerLib._overflows > 0) {
-		TimerLib._overflows--;
+	if (_overflows > 0) {
+		_overflows--;
 	}
-	if (TimerLib._overflows == 0 && TimerLib._remaining > 0) {
+	if (_overflows == 0 && _remaining > 0) {
 		// Load remaining count to counter
-		TimerLib._loadRemaining();
+		_loadRemaining();
 		// And clear remaining count
-		TimerLib._remaining = 0;
-	} else if (TimerLib._overflows == 0 && TimerLib._remaining == 0) {
-		if (TimerLib._type == UTIMERLIB_TYPE_TIMEOUT) {
-			TimerLib.clearTimer();
-		} else if (TimerLib._type == UTIMERLIB_TYPE_INTERVAL) {
-			if (TimerLib.__overflows == 0) {
-				TimerLib._loadRemaining();
+		_remaining = 0;
+	} else if (_overflows == 0 && _remaining == 0) {
+		if (_type == UTIMERLIB_TYPE_TIMEOUT) {
+			clearTimer();
+		} else if (_type == UTIMERLIB_TYPE_INTERVAL) {
+			if (__overflows == 0) {
+				_loadRemaining();
 			} else {
-				TimerLib._overflows = TimerLib.__overflows;
-				TimerLib._remaining = TimerLib.__remaining;
+				_overflows = __overflows;
+				_remaining = __remaining;
 			}
 		}
-		TimerLib._cb();
+		_cb();
 	}
 }
+
+/**
+ * Static envelope for Internal intermediate function to control timer interrupts
+ */
+#ifdef _VARIANT_ARDUINO_STM32_
+	void uTimerLib::interrupt() {
+		_instance->_interrupt();
+	}
+#endif
+
+
+// Preinstantiate Object
+uTimerLib TimerLib = uTimerLib();
 
 
 
@@ -343,7 +357,7 @@ void uTimerLib_interruptHandle() {
 #ifdef ARDUINO_ARCH_AVR
 	// Arduino AVR
 	ISR(TIMER2_OVF_vect) {
-		uTimerLib_interruptHandle();
+		TimerLib._interrupt();
 	}
 #endif
 

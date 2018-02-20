@@ -1,8 +1,8 @@
-# Arduino, ESP8266 and STM32 uTimerLib
+# Arduino, ESP8266 and STM32 Timer-driven timed function calls - uTimerLib #
 
 ## What is this repository for? ##
 
-Tiny and cross-device compatible timer library.
+Tiny and cross-device compatible timer-driven timed function calls library.
 
 Supports Arduino AVR, SAM, SAM32, STM32 and ESP8266 microcontrollers.
 
@@ -43,11 +43,11 @@ You can get it from Arduino libraries directly, searching by uTimerLib.
 
 For manual installation:
 
- * Get the ZIP.
+ * Get the ZIP from releases link: https://github.com/Naguissa/uTimerLib/releases
  * Rename to uTimerLib.zip
  * Install library on Arduino
 
-## Example ##
+## Examples ##
 
 Included on example folder, available on Arduino IDE.
 
@@ -56,6 +56,6 @@ Included on example folder, available on Arduino IDE.
 ## Who do I talk to? ##
 
  * [Naguissa](https://github.com/Naguissa)
- * https://www.foroelectro.net
+ * https://www.foroelectro.net/electronica-digital-microcontroladores-f8/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html
  * https://www.naguissa.com
 

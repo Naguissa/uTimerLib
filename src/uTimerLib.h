@@ -34,10 +34,19 @@
 			int setTimeout_s(void (*) (), unsigned long int);
 			void clearTimer();
 
+			#ifdef _VARIANT_ARDUINO_STM32_
+				static void interrupt();
+			#endif
+			void _interrupt();
+
+
+		private:
 			/**
 			 * Because several compatibility issues -specially STM32- we need to put
 			 * these as public, but it should be private. Maybe in future upgrades...
 			 */
+			static uTimerLib *_instance;
+
 			unsigned long int _overflows = 0;
 			unsigned char _remaining = 0;
 			unsigned long int __overflows = 0;
@@ -47,20 +56,16 @@
 
 			void _loadRemaining();
 
-		private:
-			#ifdef _VARIANT_ARDUINO_STM32_
-				bool _toInit = true;
-			#endif
 			void _attachInterrupt_us(unsigned long int);
 			void _attachInterrupt_s(unsigned long int);
 
+			#ifdef _VARIANT_ARDUINO_STM32_
+				bool _toInit = true;
+			#endif
 
 	};
 
 	extern uTimerLib TimerLib;
-	#ifdef _VARIANT_ARDUINO_STM32_
-		void uTimerLib_interruptHandle();
-	#endif
 
 #endif
 
