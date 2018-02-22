@@ -11,7 +11,7 @@
 
 
 
-bool status = 0;
+volatile bool status = 0;
 
 void timed_function() {
 	status = !status;

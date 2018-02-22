@@ -1,3 +1,9 @@
 AVR Timer2:
  - https://hetpro-store.com/TUTORIALES/arduino-timer/
  - https://playground.arduino.cc/Main/TimerPWMCheatsheet
+
+Arduino DUE (SAM):
+ - https://forum.arduino.cc/index.php?topic=130423.0
+ - http://2manyprojects.net/timer-interrupts
+
+

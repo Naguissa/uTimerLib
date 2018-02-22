@@ -48,9 +48,14 @@
 			static uTimerLib *_instance;
 
 			unsigned long int _overflows = 0;
-			unsigned char _remaining = 0;
 			unsigned long int __overflows = 0;
-			unsigned char __remaining = 0;
+			#ifdef ARDUINO_ARCH_AVR
+				unsigned char _remaining = 0;
+				unsigned char __remaining = 0;
+			#else
+				unsigned long int _remaining = 0;
+				unsigned long int __remaining = 0;
+			#endif
 			void (*_cb)() = NULL;
 			unsigned char _type = UTIMERLIB_TYPE_OFF;
 
