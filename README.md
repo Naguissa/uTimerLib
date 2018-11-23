@@ -1,10 +1,10 @@
-# Arduino, ESP8266 and STM32 Timer-driven timed function calls - uTimerLib #
+# Arduino tiny and cross-device compatible timer library - uTimerLib #
 
 ## What is this repository for? ##
 
 Tiny and cross-device compatible timer-driven timed function calls library.
 
-Supports Arduino AVR, SAM, SAM32, STM32 and ESP8266 microcontrollers.
+Supports Arduino AVR, SAM, STM32, ESP8266 and SAMD21 microcontrollers.
 
 
 ## Current status ##
@@ -14,6 +14,9 @@ While being in 0.X.Y version, library is still in development.
 Currently suported architectures:
  - AVR
  - STM32
+ - SAM (Arduino Due)
+ - ESP8266
+ - SAMD21 (Arduino Zero and Zero MKR, experimental)
 
 ## Device timer usage ##
 
@@ -21,10 +24,13 @@ Depending on wich architecture this library uses one or another device timer. Ta
 
  - AVR: Timer2 (3rd timer)
  - STM32: Timer3 (3rd timer)
+ - SAM: TC3 (Timer1, channel 0)
+ - ESP8266: Ticker library (inside ESP8266 core, no extras needed)
+ - SAMD21: Timer2 (3rd timer)
 
 ## Usage ##
 
-This library defines a global avriable when included called "TimerLib".
+This library defines a global variable when included called "TimerLib".
 
 You have these methods:
  - *TimerLib.setInterval_us(callback_function, microseconds);* : callback_function will be called each microseconds.

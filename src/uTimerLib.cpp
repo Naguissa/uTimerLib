@@ -1,5 +1,5 @@
 /**
- * Tiny and cross-device compatible timer library.
+ * Arduino tiny and cross-device compatible timer library.
  *
  * Timers used by microcontroller
  *	Atmel AVR:	Timer2 (3rd timer)
