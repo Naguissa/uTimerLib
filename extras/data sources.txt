@@ -1,9 +1,15 @@
-AVR Timer2:
+AVR:
  - https://hetpro-store.com/TUTORIALES/arduino-timer/
  - https://playground.arduino.cc/Main/TimerPWMCheatsheet
 
-Arduino DUE (SAM):
+SAM (Arduino DUE):
  - https://forum.arduino.cc/index.php?topic=130423.0
  - http://2manyprojects.net/timer-interrupts
 
+ESP8266:
+ - https://circuits4you.com/2018/01/02/esp8266-timer-ticker-example/
 
+
+SAMD21 (Arduino Zero and zero MKR):
+ - https://github.com/maxbader/arduino_tools/blob/master/libraries/timer_zero_tc_interrupt/timer_zero_tc_interrupt.ino
+ - (Datasheet)
