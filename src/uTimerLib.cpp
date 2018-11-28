@@ -620,7 +620,7 @@ void uTimerLib::_interrupt() {
 					#endif
 
 					// SAMD21, Arduino Zero
-					#ifdef ARDUINO_ARCH_SAM
+					#ifdef ARDUINO_ARCH_SAMD21
 						TC2->CC[0].reg = 0xFFFF;
 					#endif
 				}
@@ -636,7 +636,7 @@ void uTimerLib::_interrupt() {
 		#endif
 
 		// SAMD21, Arduino Zero
-		#ifdef ARDUINO_ARCH_SAM
+		#ifdef ARDUINO_ARCH_SAMD21
 			// Reload for SAMD21
 			else if (_overflows > 0) {
 				TC2->CC[0].reg = 0xFFFF;
