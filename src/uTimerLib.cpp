@@ -295,18 +295,16 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 		*/
 
 		// Enable clock for TC
-		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
+		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_GENDIV_DIV(1) | GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Disable TC
 		TC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
-		TC2->CTRLA.reg |= TC_CTRLA_MODE_COUNT16;  // Set Timer counter Mode to 16 bits
+		// Set Timer counter Mode to 16 bits + Set TC as normal Normal Frq + Prescaler: GCLK_TC/16
+		TC2->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 | TC_CTRLA_WAVEGEN_NFRQ | TC_CTRLA_PRESCALER_DIV16);
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
-		TC2->CTRLA.reg |= TC_CTRLA_WAVEGEN_NFRQ; // Set TC as normal Normal Frq
-		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
-
 
 		if (us > 21845) {
 			__overflows = _overflows = us / 21845.333333333;
@@ -316,9 +314,6 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 			__remaining = _remaining = (us / 0.333333333 + 0.5); // +0.5 is same as round
 		}
 
-		// Prescaler: GCLK_TC/16
-		TC2->CTRLA.reg |= TC_CTRLA_PRESCALER_DIV16;
-		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Counter PER not needed
 		// TC2->PER.reg = 0xFF;
@@ -329,13 +324,12 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 			_remaining = 0;
 		} else {
 			TC2->CC[0].reg = 0xFFFF;
-			while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
+			// Skip: while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 		}
-
 
 		// Interrupts
 		TC2->INTENSET.reg = 0;              // disable all interrupts
-		TC2->INTENSET.bit.OVF = 1;          // enable overfollow
+		TC2->INTENSET.bit.OVF = 0;          // disable overfollow
 		TC2->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
 		NVIC_EnableIRQ(TC2_IRQn);
 
@@ -469,16 +463,15 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 	// SAMD21, Arduino Zero
 	#ifdef ARDUINO_ARCH_SAMD21
 		// Enable clock for TC
-		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
+		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_GENDIV_DIV(1) | GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Disable TC
 		TC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
-		TC2->CTRLA.reg |= TC_CTRLA_MODE_COUNT16;  // Set Timer counter Mode to 16 bits
-		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
-		TC2->CTRLA.reg |= TC_CTRLA_WAVEGEN_NFRQ; // Set TC as normal Normal Frq
+		// Set Timer counter Mode to 16 bits + Set TC as normal Normal Frq + Prescaler: GCLK_TC/1024
+		TC2->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 + TC_CTRLA_WAVEGEN_NFRQ + TC_CTRLA_PRESCALER_DIV1024);
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (s > 1) {
@@ -487,10 +480,7 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 		} else {
 			__overflows = _overflows = 0;
 			__remaining = _remaining = (s / 0.000021333333333 + 0.5); // +0.5 is same as round
-
-		// Prescaler: GCLK_TC/1024
-		TC2->CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1024;
-		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
+		}
 
 		// Counter PER not needed
 		// TC2->PER.reg = 0xFF;
@@ -501,13 +491,13 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 			_remaining = 0;
 		} else {
 			TC2->CC[0].reg = 0xFFFF;
-			while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
+			// Skip: while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 		}
 
 
 		// Interrupts
 		TC2->INTENSET.reg = 0;              // disable all interrupts
-		TC2->INTENSET.bit.OVF = 1;          // enable overfollow
+		TC2->INTENSET.bit.OVF = 0;          // disable overfollow
 		TC2->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
 		NVIC_EnableIRQ(TC2_IRQn);
 
