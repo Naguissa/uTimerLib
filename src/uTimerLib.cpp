@@ -295,7 +295,7 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 		*/
 
 		// Enable clock for TC
-		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_GENDIV_DIV(1) | GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
+		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Disable TC
@@ -463,7 +463,7 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 	// SAMD21, Arduino Zero
 	#ifdef ARDUINO_ARCH_SAMD21
 		// Enable clock for TC
-		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_GENDIV_DIV(1) | GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
+		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Disable TC
