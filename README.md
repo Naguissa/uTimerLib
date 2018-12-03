@@ -9,14 +9,12 @@ Supports Arduino AVR, SAM, STM32, ESP8266 and SAMD21 microcontrollers.
 
 ## Current status ##
 
-While being in 0.X.Y version, library is still in development.
-
 Currently suported architectures:
  - AVR
  - STM32
  - SAM (Arduino Due)
  - ESP8266
- - SAMD21 (Arduino Zero and Zero MKR, experimental)
+ - SAMD21 (Arduino Zero and Zero MKR; experimental support)
 
 ## Device timer usage ##
 
@@ -58,6 +56,10 @@ For manual installation:
 Included on example folder, available on Arduino IDE.
 
 
+## Extra ##
+
+Look in extras folder for datasheets and extra info
+
 
 ## Who do I talk to? ##
 
@@ -65,3 +67,13 @@ Included on example folder, available on Arduino IDE.
  * https://www.foroelectro.net/electronica-digital-microcontroladores-f8/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html
  * https://www.naguissa.com
 
+
+## Contribute ##
+
+Any code contribution, report or comment are always welcome. Don't hesitate to use GitHub for that.
+
+
+You can make a donation via PayPal: https://paypal.me/foroelectro
+
+
+Thanks for your support.
