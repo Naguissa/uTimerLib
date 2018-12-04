@@ -6,7 +6,8 @@
  *  STM32:		Timer3 (3rd timer)
  *  SAM (Due):  TC3 (Timer1, channel 0)
  *  ESP8266:	OS Timer, one slof of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
- *  SAMD21:		Timer2 (3rd Timer. Used because there're 3 a 5 timer versions). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
+ *  SAMD21:		Timer 3 (TCC2. Used because there're 3 a 5 timer versions). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
+ *  SAMD51:		Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
  *
  * @copyright Naguissa
  * @author Naguissa
@@ -266,7 +267,7 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 
 
 	// SAMD21, Arduino Zero
-	#ifdef ARDUINO_ARCH_SAMD21
+	#ifdef _SAMD21_
 		/*
 		16 bit timer
 
@@ -274,7 +275,7 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 		Prescalers: GCLK_TC, GCLK_TC/2, GCLK_TC/4, GCLK_TC/8, GCLK_TC/16, GCLK_TC/64, GCLK_TC/256, GCLK_TC/1024
 		Base frequency: 84MHz
 
-		We will use TC2, as there're some models with only 3 timers (regular models have 5 TCs)
+		We will use TCC2, as there're some models with only 3 timers (regular models have 5 TCs)
 
 		REMEMBER! 16 bit counter!!!
 
@@ -295,15 +296,15 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 		*/
 
 		// Enable clock for TC
-		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
+		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TCC2_TC3)) ;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Disable TC
-		TC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+		TCC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Set Timer counter Mode to 16 bits + Set TC as normal Normal Frq + Prescaler: GCLK_TC/16
-		TC2->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 | TC_CTRLA_WAVEGEN_NFRQ | TC_CTRLA_PRESCALER_DIV16);
+		TCC2->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 | TC_CTRLA_WAVEGEN_NFRQ | TC_CTRLA_PRESCALER_DIV16);
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (us > 21845) {
@@ -316,26 +317,97 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 
 
 		// Counter PER not needed
-		// TC2->PER.reg = 0xFF;
+		// TCC2->PER.reg = 0xFF;
 		// while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (__overflows == 0) {
 			_loadRemaining();
 			_remaining = 0;
 		} else {
-			TC2->CC[0].reg = 0xFFFF;
+			TCC2->CC[0].reg = 0xFFFF;
 			// Skip: while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 		}
 
 		// Interrupts
-		TC2->INTENSET.reg = 0;              // disable all interrupts
-		TC2->INTENSET.bit.OVF = 0;          // disable overfollow
-		TC2->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
-		NVIC_EnableIRQ(TC2_IRQn);
+		TCC2->INTENSET.reg = 0;              // disable all interrupts
+		TCC2->INTENSET.bit.OVF = 0;          // disable overfollow
+		TCC2->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
+		NVIC_EnableIRQ(TCC2_IRQn);
 
 		// Enable TC
-		TC2->CTRLA.reg |= TC_CTRLA_ENABLE;
+		TCC2->CTRLA.reg |= TC_CTRLA_ENABLE;
 	#endif
+
+
+
+	#ifdef __SAMD51__
+		/*
+		16 bit timer
+
+		Prescaler:
+		Prescalers: GCLK_TC, GCLK_TC/2, GCLK_TC/4, GCLK_TC/8, GCLK_TC/16, GCLK_TC/64, GCLK_TC/256, GCLK_TC/1024
+		Base frequency: 84MHz
+
+		We will use TC1
+
+		REMEMBER! 16 bit counter!!!
+
+		Name			Prescaler	Freq		Base Delay		Overflow delay
+		GCLK_TC			   1		 120MHz		0,008333333us	    546,133333333us;    0,546133333333ms
+		GCLK_TC/2		   2		  60MHz		0,016666667us	   1092,266666667us;    1,092266666667ms
+		GCLK_TC/4		   4		  30MHz		0,033333333us	   2184,533333333us;    2,184533333333ms
+		GCLK_TC/8		   8		  20MHz		0,066666667us	   4369,066666667us;    4,369066666667ms
+		GCLK_TC/16		  16		  10MHz		0,133333333us	   8738,133333333us;    8,738133333333ms
+		GCLK_TC/64		  64		1,875MHz	0,533333333us	  34952,533333333us;   34,952533333333ms
+		GCLK_TC/256		 256		468,75KHz	2,133333333us	 139810,133333333us;  139,810133333333ms
+		GCLK_TC/1024	1024		117,1875Hz	8,533333333us	 559240,533333333us;  559,240533333333ms
+
+		Will be using:
+			GCLK_TC/16 for us
+			GCLK_TC/1024 for s
+		*/
+
+		MCLK->APBAMASK.bit.TC1_ = 1;
+		GCLK->PCHCTRL[TC1_GCLK_ID].bit.GEN = 0;
+		GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN = 1;
+		while(GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN != 1); // sync
+
+		TC1->COUNT16.CTRLA.bit.ENABLE = 0;
+		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+
+		TC1->COUNT16.CTRLA.bit.MODE = TC_CTRLA_MODE_COUNT16_Val;
+		TC1->COUNT16.CTRLA.bit.PRESCALER = TC_CTRLA_PRESCALER_DIV16_Val;
+		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+
+
+		if (us > 8738) {
+			__overflows = _overflows = us / 8738.133333333;
+			__remaining = _remaining = (us - (8738.133333333 * _overflows)) / 0.133333333 + 0.5; // +0.5 is same as round
+		} else {
+			__overflows = _overflows = 0;
+			__remaining = _remaining = (us / 0.133333333 + 0.5); // +0.5 is same as round
+		}
+
+		if (__overflows == 0) {
+			_loadRemaining();
+			_remaining = 0;
+		} else {
+			TC1->COUNT16.CC[1].reg = 0xFFFF;
+			// Skip: while (TC1->COUNT16.SYNCBUSY.reg); // sync
+		}
+
+
+		TC1->COUNT16.INTENSET.bit.OVF = 1;
+		// Enable InterruptVector
+		NVIC_EnableIRQ(TC1_IRQn);
+
+		// Count on event
+		TC1->COUNT16.EVCTRL.bit.EVACT = TC_EVCTRL_EVACT_COUNT_Val;
+		// This works but should be after EVSYS setup according to the data sheet
+		//TC1->COUNT16.EVCTRL.bit.TCEI = 1;
+		//TC1->COUNT16.CTRLA.bit.ENABLE = 1;
+	#endif
+
 
 }
 
@@ -461,17 +533,17 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 
 
 	// SAMD21, Arduino Zero
-	#ifdef ARDUINO_ARCH_SAMD21
+	#ifdef _SAMD21_
 		// Enable clock for TC
-		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID ( GCM_TCC2_TC2 ) ) ;
+		REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TCC2_TC3)) ;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Disable TC
-		TC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+		TCC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		// Set Timer counter Mode to 16 bits + Set TC as normal Normal Frq + Prescaler: GCLK_TC/1024
-		TC2->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 + TC_CTRLA_WAVEGEN_NFRQ + TC_CTRLA_PRESCALER_DIV1024);
+		TCC2->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 + TC_CTRLA_WAVEGEN_NFRQ + TC_CTRLA_PRESCALER_DIV1024);
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (s > 1) {
@@ -483,27 +555,64 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 		}
 
 		// Counter PER not needed
-		// TC2->PER.reg = 0xFF;
+		// TCC2->PER.reg = 0xFF;
 		// while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (__overflows == 0) {
 			_loadRemaining();
 			_remaining = 0;
 		} else {
-			TC2->CC[0].reg = 0xFFFF;
+			TCC2->CC[0].reg = 0xFFFF;
 			// Skip: while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
 		}
 
 
 		// Interrupts
-		TC2->INTENSET.reg = 0;              // disable all interrupts
-		TC2->INTENSET.bit.OVF = 0;          // disable overfollow
-		TC2->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
-		NVIC_EnableIRQ(TC2_IRQn);
+		TCC2->INTENSET.reg = 0;              // disable all interrupts
+		TCC2->INTENSET.bit.OVF = 0;          // disable overfollow
+		TCC2->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
+		NVIC_EnableIRQ(TCC2_IRQn);
 
 		// Enable TC
-		TC2->CTRLA.reg |= TC_CTRLA_ENABLE;
+		TCC2->CTRLA.reg |= TC_CTRLA_ENABLE;
 	#endif
+
+
+	#ifdef __SAMD51__
+		/*
+		GCLK_TC/1024	1024		117,1875Hz	8,533333333us	 559240,533333333us;  559,240533333333ms
+		*/
+
+		MCLK->APBAMASK.bit.TC1_ = 1;
+		GCLK->PCHCTRL[TC1_GCLK_ID].bit.GEN = 0;
+		GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN = 1;
+		while(GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN != 1); // sync
+
+		TC1->COUNT16.CTRLA.bit.ENABLE = 0;
+		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+
+		TC1->COUNT16.CTRLA.bit.MODE = TC_CTRLA_MODE_COUNT16_Val;
+		TC1->COUNT16.CTRLA.bit.PRESCALER = TC_CTRLA_PRESCALER_DIV16_Val;
+		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+
+
+		__overflows = _overflows = s / 0.559240533333333;
+		__remaining = _remaining = (s - (0.559240533333333 * _overflows)) / 0.000008533333333 + 0.5; // +0.5 is same as round
+
+		TC1->COUNT16.CC[1].reg = 0xFFFF;
+		// Skip: while (TC1->COUNT16.SYNCBUSY.reg); // sync
+
+		TC1->COUNT16.INTENSET.bit.OVF = 1;
+		// Enable InterruptVector
+		NVIC_EnableIRQ(TC1_IRQn);
+
+		// Count on event
+		TC1->COUNT16.EVCTRL.bit.EVACT = TC_EVCTRL_EVACT_COUNT_Val;
+		// This works but should be after EVSYS setup according to the data sheet
+		//TC1->COUNT16.EVCTRL.bit.TCEI = 1;
+		//TC1->COUNT16.CTRLA.bit.ENABLE = 1;
+	#endif
+
 
 }
 
@@ -529,9 +638,14 @@ void uTimerLib::_loadRemaining() {
 	// ESP8266
 
 	// SAMD21, Arduino Zero
-	#ifdef ARDUINO_ARCH_SAMD21
-		TC2->CC[0].reg = _remaining;
+	#ifdef _SAMD21_
+		TCC2->CC[0].reg = _remaining;
 		while (GCLK->STATUS.bit.SYNCBUSY == 1); // sync
+	#endif
+
+	#ifdef __SAMD51__
+		TC1->COUNT16.CC[1].reg = _remaining;
+		while (TC1->COUNT16.SYNCBUSY.reg); // sync
 	#endif
 
 }
@@ -563,10 +677,17 @@ void uTimerLib::clearTimer() {
 	#endif
 
 	// SAMD21, Arduino Zero
-	#ifdef ARDUINO_ARCH_SAMD21
+	#ifdef _SAMD21_
 		// Disable TC
-		TC2->INTENSET.reg = 0;              // disable all interrupts
-		TC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+		TCC2->INTENSET.reg = 0;              // disable all interrupts
+		TCC2->CTRLA.reg &= ~TC_CTRLA_ENABLE;
+	#endif
+
+	// SAMD51
+	#ifdef __SAMD51__
+		TC1->COUNT16.INTENSET.bit.OVF = 1;
+		// Disable InterruptVector
+		NVIC_DisableIRQ(TC1_IRQn);
 	#endif
 
 }
@@ -610,8 +731,14 @@ void uTimerLib::_interrupt() {
 					#endif
 
 					// SAMD21, Arduino Zero
-					#ifdef ARDUINO_ARCH_SAMD21
-						TC2->CC[0].reg = 0xFFFF;
+					#ifdef _SAMD21_
+						TCC2->CC[0].reg = 0xFFFF;
+					#endif
+
+
+					// SAMD51
+					#ifdef __SAMD51__
+						TC1->COUNT16.CC[1].reg = 0xFFFF;
 					#endif
 				}
 			}
@@ -626,13 +753,19 @@ void uTimerLib::_interrupt() {
 		#endif
 
 		// SAMD21, Arduino Zero
-		#ifdef ARDUINO_ARCH_SAMD21
+		#ifdef _SAMD21_
 			// Reload for SAMD21
 			else if (_overflows > 0) {
-				TC2->CC[0].reg = 0xFFFF;
+				TCC2->CC[0].reg = 0xFFFF;
 			}
 		#endif
 
+		// SAMD51
+		#ifdef __SAMD51__
+			else if (_overflows > 0) {
+				TC1->COUNT16.CC[1].reg = 0xFFFF;
+			}
+		#endif
 	#endif
 
 }
@@ -682,15 +815,29 @@ uTimerLib TimerLib = uTimerLib();
 #endif
 
 
-#ifdef ARDUINO_ARCH_SAMD21
-	void TC2_Handler() {
+#ifdef _SAMD21_
+	void TCC2_Handler() {
 		// Overflow - Nothing, we will use compare to max value instead to unify behaviour
-		if (TC2->INTFLAG.bit.OVF == 1) {
-			TC2->INTFLAG.bit.OVF = 1;  // Clear flag
+		if (TCC2->INTFLAG.bit.OVF == 1) {
+			TCC2->INTFLAG.bit.OVF = 1;  // Clear flag
 		}
 		// Compare
-		if (TC2->INTFLAG.bit.MC0 == 1)
-			TC2->INTFLAG.bit.MC0 = 1;  // Clear flag
+		if (TCC2->INTFLAG.bit.MC0 == 1) {
+			TCC2->INTFLAG.bit.MC0 = 1;  // Clear flag
+			TimerLib._interrupt();
+		}
+	}
+#endif
+
+#ifdef __SAMD51__
+	void TC2_Handler() {
+		// Overflow - Nothing, we will use compare to max value instead to unify behaviour
+		if (TC1->COUNT16.INTFLAG.bit.OVF == 1) {
+			TC1->COUNT16.INTENSET.bit.OVF = 1;  // Clear flag
+		}
+		// Compare
+		if (TC1->COUNT16.INTFLAG.bit.MC0 == 1) {
+			TC1->COUNT16.INTENSET.bit.MC0 = 1;  // Clear flag
 			TimerLib._interrupt();
 		}
 	}

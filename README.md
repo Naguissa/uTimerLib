@@ -15,6 +15,7 @@ Currently suported architectures:
  - SAM (Arduino Due)
  - ESP8266
  - SAMD21 (Arduino Zero and Zero MKR; experimental support)
+ - SAMD51 (Adafruit Feather M4, Adafruit Metro M4; experimental support)
 
 ## Device timer usage ##
 
@@ -24,7 +25,8 @@ Depending on wich architecture this library uses one or another device timer. Ta
  - STM32: Timer3 (3rd timer)
  - SAM: TC3 (Timer1, channel 0)
  - ESP8266: Ticker library (inside ESP8266 core, no extras needed)
- - SAMD21: Timer2 (3rd timer)
+ - SAMD21: Timer2 (3rd timer); 16 bit mode
+ - SAMD51: Timer1 (2nd timer); 16 bit mode
 
 ## Usage ##
 

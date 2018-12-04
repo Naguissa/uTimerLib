@@ -13,3 +13,7 @@ ESP8266:
 SAMD21 (Arduino Zero and zero MKR):
  - https://github.com/maxbader/arduino_tools/blob/master/libraries/timer_zero_tc_interrupt/timer_zero_tc_interrupt.ino
  - (Datasheet)
+
+SAMD51 (Adafruit Feather M4, Adafruit Metro M4)
+ - https://community.atmel.com/comment/2452646#comment-2452646
+ - (Datasheet)
