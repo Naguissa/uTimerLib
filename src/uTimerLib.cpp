@@ -6,6 +6,7 @@
  *  STM32:		Timer3 (3rd timer)
  *  SAM (Due):  TC3 (Timer1, channel 0)
  *  ESP8266:	OS Timer, one slof of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
+ *  ESP32:		OS Timer, one slof of software timer.
  *  SAMD21:		Timer 4, CC0 (TC3). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
  *  SAMD51:		Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
  *
@@ -256,7 +257,7 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 
 
 
-	#ifdef ARDUINO_ARCH_ESP8266
+	#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		unsigned long int ms = (us / 1000) + 0.5;
 		if (ms == 0) {
 			ms = 1;
@@ -523,7 +524,7 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 		TC_Start(TC1, 0);
 	#endif
 
-	#ifdef ARDUINO_ARCH_ESP8266
+	#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		__overflows = _overflows = __remaining = _remaining = 0;
 		_ticker.attach(s, uTimerLib::interrupt);
 	#endif
@@ -632,6 +633,7 @@ void uTimerLib::_loadRemaining() {
 	#endif
 
 	// ESP8266
+	// ESP32
 
 	// SAMD21, Arduino Zero
 	#ifdef _SAMD21_
@@ -670,7 +672,7 @@ void uTimerLib::clearTimer() {
         NVIC_DisableIRQ(TC3_IRQn);
 	#endif
 
-	#ifdef ARDUINO_ARCH_ESP8266
+	#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		_ticker.detach();
 	#endif
 
@@ -812,7 +814,7 @@ uTimerLib TimerLib = uTimerLib();
 #endif
 
 
-#ifdef ARDUINO_ARCH_ESP8266
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 	void uTimerLib::interrupt() {
 		TimerLib._interrupt();
 	}
