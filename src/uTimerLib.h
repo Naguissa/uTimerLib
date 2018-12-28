@@ -6,7 +6,7 @@
  *  STM32:		Timer3 (3rd timer)
  *  SAM (Due):  TC3 (Timer1, channel 0)
  *  ESP8266:	OS Timer, one slof of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
- *  SAMD21:		Timer 3 (TCC2. Used because there're 3 a 5 timer versions). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
+ *  SAMD21:		Timer 4, CC0 (TC3). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
  *  SAMD51:		Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
  *
  * @copyright Naguissa
@@ -54,6 +54,7 @@
 
 			#ifdef _SAMD21_
 				#pragma message "SAMD21 support is still experimental"
+				TcCount16* _TC = (TcCount16*) TC3;
 			#endif
 
 			#ifdef __SAMD51__
@@ -87,7 +88,6 @@
 			#ifdef ARDUINO_ARCH_ESP8266
 				Ticker _ticker;
 			#endif
-
 	};
 
 	extern uTimerLib TimerLib;
