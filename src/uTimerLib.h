@@ -13,7 +13,7 @@
  * @copyright Naguissa
  * @author Naguissa
  * @email naguissa@foroelectro.net
- * @version 1.0.0
+ * @version 1.1.1
  * @created 2018-01-27
  */
 #ifndef _uTimerLib_

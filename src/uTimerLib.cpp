@@ -13,7 +13,7 @@
  * @copyright Naguissa
  * @author Naguissa
  * @email naguissa@foroelectro.net
- * @version 1.0.0
+ * @version 1.1.1
  * @created 2018-01-27
  */
 #include "uTimerLib.h"
@@ -637,6 +637,7 @@ void uTimerLib::_loadRemaining() {
 
 	// SAMD21, Arduino Zero
 	#ifdef _SAMD21_
+		_TC->COUNT.reg = 0;              // Reset to 0
 		_TC->CC[0].reg = _remaining;
 		_TC->INTENSET.reg = 0;              // disable all interrupts
 		_TC->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
@@ -732,6 +733,7 @@ void uTimerLib::_interrupt() {
 
 					// SAMD21, Arduino Zero
 					#ifdef _SAMD21_
+						_TC->COUNT.reg = 0;              // Reset to 0
 						_TC->INTENSET.reg = 0;              // disable all interrupts
 						_TC->INTENSET.bit.OVF = 0;          // enable overfollow
 						_TC->INTENSET.bit.MC0 = 1;          // disable compare match to CC0
@@ -759,6 +761,7 @@ void uTimerLib::_interrupt() {
 		#ifdef _SAMD21_
 			// Reload for SAMD21
 			else if (_overflows > 0) {
+				_TC->COUNT.reg = 0;              // Reset to 0
 				_TC->INTENSET.reg = 0;              // disable all interrupts
 				_TC->INTENSET.bit.OVF = 0;          // enable overfollow
 				_TC->INTENSET.bit.MC0 = 1;          // disable compare match to CC0
