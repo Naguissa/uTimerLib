@@ -13,7 +13,7 @@
  * @copyright Naguissa
  * @author Naguissa
  * @email naguissa@foroelectro.net
- * @version 1.1.1
+ * @version 1.1.2
  * @created 2018-01-27
  */
 #include "uTimerLib.h"
@@ -116,10 +116,9 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 		if (F_CPU != 16000000) {
 			us = F_CPU / 16000000 * us;
 		}
-
+		TIMSK2 &= ~((1 << TOIE2) | (1 << OCIE2A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 		cli();
-
-		// AVR, using Timer2. Counts at 8MHz
+		// AVR, using Timer2. Counts at 16MHz
 		/*
 		Prescaler: TCCR2B; 3 last bits, CS20, CS21 and CS22
 
@@ -165,21 +164,13 @@ void uTimerLib::_attachInterrupt_us(unsigned long int us) {
 
 		__overflows = _overflows;
 		__remaining = _remaining;
-
+		_overflows += 1; // Fix interrupt incorrectly firing just after sei()
 		ASSR &= ~(1<<AS2); 		// Internal clock
 		TCCR2A = (1<<COM2A1);	// Normal operation
 		TCCR2B = TCCR2B & ~((1<<CS22) | (1<<CS21) | (1<<CS20)) | CSMask;	// Sets divisor
 
-		// Clean counter in normal operation, load remaining when overflows == 0
-		if (__overflows == 0) {
-			_loadRemaining();
-			_remaining = 0;
-		} else {
-			TCNT2 = 0;				// Clean timer count
-		}
+		TCNT2 = 0;				// Clean timer count
 		TIMSK2 |= (1 << TOIE2);		// Enable overflow interruption when 0
-    	TIMSK2 &= ~(1 << OCIE2A);	// Disable interrupt on compare match
-
 		sei();
 	#endif
 
@@ -429,6 +420,7 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 			s = F_CPU / 16000000 * s;
 		}
 
+		TIMSK2 &= ~((1 << TOIE2) | (1 << OCIE2A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 		cli();
 
 		/*
@@ -453,20 +445,15 @@ void uTimerLib::_attachInterrupt_s(unsigned long int s) {
 
 		__overflows = _overflows;
 		__remaining = _remaining;
+		_overflows += 1;
 
 		ASSR &= ~(1<<AS2); 		// Internal clock
 		TCCR2A = (1<<COM2A1);	// Normal operation
 		TCCR2B = TCCR2B & ~((1<<CS22) | (1<<CS21) | (1<<CS20)) | CSMask;	// Sets divisor
 
 		// Clean counter in normal operation, load remaining when overflows == 0
-		if (__overflows == 0) {
-			_loadRemaining();
-		} else {
-			TCNT2 = 0;				// Clean timer count
-		}
+		TCNT2 = 0;				// Clean timer count
 		TIMSK2 |= (1 << TOIE2);		// Enable overflow interruption when 0
-    	TIMSK2 &= ~(1 << OCIE2A);	// Disable interrupt on compare match
-
 		sei();
 	#endif
 
