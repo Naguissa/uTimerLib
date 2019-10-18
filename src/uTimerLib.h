@@ -1,22 +1,38 @@
 /**
- * Arduino tiny and cross-device compatible timer library.
+ * \mainpage
+ * \brief Arduino tiny and cross-device compatible timer library.
  *
- * Timers used by microcontroller
- *	Atmel AVR:	Timer2 (3rd timer)
- *  STM32:		Timer3 (3rd timer)
- *  SAM (Due):  TC3 (Timer1, channel 0)
- *  ESP8266:	OS Timer, one slof of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
- *  ESP32:		OS Timer, one slof of software timer.
- *  SAMD21:		Timer 4, CC0 (TC3). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
- *  SAMD51:		Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
+ * Timers used by each microcontroller:
+ *		* Atmel AVR 32U4:	Timer3 (4rd timer)
+ *		* Atmel AVR other:	Timer2 (3rd timer)
+ *		* STM32:			Timer3 (3rd timer)
+ *		* SAM (Due):		TC3 (Timer1, channel 0)
+ *		* ESP8266:			OS Timer, one slot of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
+ *		* ESP32:			OS Timer, one slot of software timer.
+ *		* SAMD21:			Timer 4, CC0 (TC3). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
+ *		* SAMD51:			Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
+ *
+ * You have public TimerLib variable with following methods:
+ *		* TimerLib.setInterval_us(callback_function, microseconds);* : callback_function will be called each microseconds.
+ *		* TimerLib.setInterval_s(callback_function, seconds);* : callback_function will be called each seconds.
+ *		* TimerLib.setTimeout_us(callback_function, microseconds);* : callback_function will be called once when microseconds have passed.
+ *		* TimerLib.setTimeout_s(callback_function, seconds);* : callback_function will be called once when seconds have passed.
+ *		* TimerLib.clearTimer();* : will clear any timed function if exists.
  *
  * @copyright Naguissa
  * @author Naguissa
- * @email naguissa@foroelectro.net
- * @version 1.1.2
- * @created 2018-01-27
+ * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
+ * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
+ * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
+ * @version 1.2.0
+ */
+/** \file uTimerLib.h
+ *   \brief uTimerLib header file
  */
 #ifndef _uTimerLib_
+	/**
+	 * \brief Prevent multiple inclussion
+	 */
 	#define _uTimerLib_
 
 	#include "Arduino.h"
@@ -25,8 +41,17 @@
 		#include <Ticker.h>  //Ticker Library
 	#endif
 	// Operation modes
+	/**
+	 * \brief Internal status
+	 */
 	#define UTIMERLIB_TYPE_OFF 0
+	/**
+	 * \brief Internal status
+	 */
 	#define UTIMERLIB_TYPE_TIMEOUT 1
+	/**
+	 * \brief Internal status
+	 */
 	#define UTIMERLIB_TYPE_INTERVAL 2
 
 	#ifdef _VARIANT_ARDUINO_STM32_

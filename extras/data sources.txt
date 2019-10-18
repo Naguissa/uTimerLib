@@ -1,4 +1,7 @@
-AVR:
+AVR 32U4:
+ - http://medesign.seas.upenn.edu/index.php/Guides/MaEvArM-timer3
+
+AVR, otros:
  - https://hetpro-store.com/TUTORIALES/arduino-timer/
  - https://playground.arduino.cc/Main/TimerPWMCheatsheet
 
