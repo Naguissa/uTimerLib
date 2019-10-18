@@ -1,5 +1,7 @@
 # Arduino tiny and cross-device compatible timer library - uTimerLib #
 
+Master status:   [![Build Status](https://travis-ci.org/Naguissa/uTimerLib.svg?branch=master)](https://travis-ci.org/Naguissa/uTimerLib)
+
 ## What is this repository for? ##
 
 Tiny and cross-device compatible timer-driven timed function calls library.
