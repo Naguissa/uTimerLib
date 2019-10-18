@@ -24,7 +24,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.2.0
+ * @version 1.2.1
  */
 /** \file uTimerLib.h
  *   \brief uTimerLib header file
@@ -64,8 +64,8 @@
 			uTimerLib();
 			void setInterval_us(void (*) (), unsigned long int);
 			void setInterval_s(void (*) (), unsigned long int);
-			int setTimeout_us(void (*) (), unsigned long int);
-			int setTimeout_s(void (*) (), unsigned long int);
+			void setTimeout_us(void (*) (), unsigned long int);
+			void setTimeout_s(void (*) (), unsigned long int);
 			void clearTimer();
 			void _interrupt();
 
