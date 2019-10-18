@@ -58,6 +58,13 @@ For manual installation:
  * Rename to uTimerLib.zip
  * Install library on Arduino
 
+## Documentation ##
+
+You can find all documentation opening /doc/index.html
+
+Due GitHub limitations HTML documentation is not avaliable online, you need to download the zip.
+
+
 ## Examples ##
 
 Included on example folder, available on Arduino IDE.
