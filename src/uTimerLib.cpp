@@ -25,7 +25,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.2.1
+ * @version 1.2.2
  */
 #include "uTimerLib.h"
 
@@ -815,7 +815,16 @@ void uTimerLib::_interrupt() {
 		return;
 	}
 	#ifdef _VARIANT_ARDUINO_STM32_
-		_cb();
+		// We are making X overflows, as much as seconds (none on us). So wee compare upper than 1
+		if (_overflows > 1) {
+			_overflows--;
+		} else {
+			_overflows = __overflows;
+			if (_type == UTIMERLIB_TYPE_TIMEOUT) {
+				clearTimer();
+			}
+			_cb();
+		}
 	#else
 		if (_overflows > 0) {
 			_overflows--;

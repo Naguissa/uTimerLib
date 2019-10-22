@@ -14,23 +14,17 @@
 	#define LED_BUILTIN 13
 #endif
 
-
-
-
 volatile bool status = 0;
 
 void timed_function() {
 	status = !status;
-	digitalWrite(LED_BUILTIN, status);
 }
-
 
 void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	TimerLib.setInterval_us(timed_function, 1000000);
 }
 
-
 void loop() {
+	digitalWrite(LED_BUILTIN, status);
 }
-

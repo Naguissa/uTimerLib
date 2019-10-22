@@ -9,15 +9,12 @@
 #include "Arduino.h"
 #include "uTimerLib.h"
 
-
-
-unsigned long int prevMillis = 0;
+volatile unsigned long int prevMillis = 0;
+volatile unsigned long int actMilis = 0;
 
 void timed_function() {
-	Serial.println(millis() - prevMillis);
+	Serial.println(actMilis - prevMillis);
 }
-
-
 
 void setup() {
 	Serial.begin(57600);
@@ -25,7 +22,7 @@ void setup() {
 	prevMillis = millis();
 }
 
-
 void loop() {
+	actMilis = millis();
 }
 
