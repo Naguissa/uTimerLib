@@ -24,7 +24,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.3.0
+ * @version 1.4.0
  */
 /** \file uTimerLib.h
  *   \brief uTimerLib header file
@@ -74,7 +74,20 @@
 			void setInterval_s(void (*) (), unsigned long int);
 			void setTimeout_us(void (*) (), unsigned long int);
 			void setTimeout_s(void (*) (), unsigned long int);
+
+			/**
+			 * \brief Loads last bit of time needed to precisely count until desired time (non complete loop)
+			 *
+			 * Note: This is device-dependant
+			 */
 			void clearTimer();
+
+			/**
+			 * \brief Internal intermediate function to control timer interrupts
+			 *
+			 * As timers doesn't give us enougth flexibility for large timings,
+			 * this function implements oferflow control to offer user desired timings.
+			 */
 			void _interrupt();
 
 			#ifdef _VARIANT_ARDUINO_STM32_
@@ -89,12 +102,11 @@
 			#endif
 
 			#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
-				#pragma message "ESP8266 / ESP32 can only reach a ms resolution so any ms interrupt will be rounded to that"
+				#pragma message "ESP8266 / ESP32 can only reach a ms resolution so any us interrupt will be rounded to that"
 				static void interrupt();
 			#endif
 
 			#ifdef _SAMD21_
-				#pragma message "SAMD21 support is still experimental"
 				TcCount16* _TC = (TcCount16*) TC3;
 			#endif
 
