@@ -125,3 +125,8 @@
 #ifdef __SAMD51__
 	#include "hardware/uTimerLib.SAMD51.cpp"
 #endif
+
+
+#if !defined(__AVR_ATmega32U4__) && !defined(ARDUINO_ARCH_AVR) && !defined(_VARIANT_ARDUINO_STM32_) && !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_SAM) && !defined(_SAMD21_) && !defined(__SAMD51__)
+	#include "hardware/uTimerLib.UNSUPPORTED.cpp"
+#endif

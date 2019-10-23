@@ -28,7 +28,7 @@
  * @version 1.4.0
  */
 #ifdef __SAMD51__
-#ifndef _uTimerLib_IMP_
+#if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
 	#define _uTimerLib_IMP_
 	#include "uTimerLib.cpp"
 
