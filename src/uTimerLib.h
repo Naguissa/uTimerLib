@@ -24,7 +24,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.2.2
+ * @version 1.3.0
  */
 /** \file uTimerLib.h
  *   \brief uTimerLib header file
@@ -56,7 +56,15 @@
 
 	#ifdef _VARIANT_ARDUINO_STM32_
 		#include "HardwareTimer.h"
-		extern HardwareTimer Timer3;
+
+		// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
+		#ifdef BOARD_NAME
+			// Private member
+
+		// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
+		#else
+			extern HardwareTimer Timer3;
+		#endif
 	#endif
 
 	class uTimerLib {
@@ -70,7 +78,14 @@
 			void _interrupt();
 
 			#ifdef _VARIANT_ARDUINO_STM32_
-				static void interrupt();
+				// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
+				#ifdef BOARD_NAME
+					static void interrupt(HardwareTimer*);
+
+				// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
+				#else
+					static void interrupt();
+				#endif
 			#endif
 
 			#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
@@ -109,6 +124,14 @@
 
 			#ifdef _VARIANT_ARDUINO_STM32_
 				bool _toInit = true;
+
+				// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
+				#ifdef BOARD_NAME
+					 HardwareTimer *Timer3 = new HardwareTimer(TIM3);
+
+				// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
+				#endif
+
 			#endif
 
 			#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)

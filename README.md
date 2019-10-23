@@ -12,8 +12,8 @@ Supports Arduino AVR, SAM, STM32, ESP8266, ESP32 and SAMD21 microcontrollers.
 ## Current status ##
 
 Currently suported architectures:
- - AVR
- - STM32
+ - AVR (included 32U4)
+ - STM32 (both Roger Clark and ST cores)
  - SAM (Arduino Due)
  - ESP8266
  - ESP32
