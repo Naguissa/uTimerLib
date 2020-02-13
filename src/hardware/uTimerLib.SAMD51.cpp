@@ -25,13 +25,14 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.4.0
+ * @version 1.5.0
  */
 #ifdef __SAMD51__
 #if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
 	#define _uTimerLib_IMP_
 	#include "uTimerLib.cpp"
 
+	#define UTIMERLIB_WAIT_SYNC() while (TC1->COUNT16.SYNCBUSY.reg)
 	/**
 	 * \brief Sets up the timer, calculation variables and interrupts for desired ms microseconds
 	 *
@@ -69,17 +70,30 @@
 			GCLK_TC/1024 for s
 		*/
 
+
+/*
+		// Enable the TC bus clock
 		MCLK->APBAMASK.bit.TC1_ = 1;
 		GCLK->PCHCTRL[TC1_GCLK_ID].bit.GEN = 0;
 		GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN = 1;
-		while(GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN != 1); // sync
+*/
+		// Enable the TC bus clock
+		GCLK->PCHCTRL[TC1_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | GCLK_PCHCTRL_CHEN;
+		while(GCLK->SYNCBUSY.reg); // sync
 
 		TC1->COUNT16.CTRLA.bit.ENABLE = 0;
-		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+		UTIMERLIB_WAIT_SYNC();
 
 		TC1->COUNT16.CTRLA.bit.MODE = TC_CTRLA_MODE_COUNT16_Val;
-		TC1->COUNT16.CTRLA.bit.PRESCALER = TC_CTRLA_PRESCALER_DIV16_Val;
-		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+		UTIMERLIB_WAIT_SYNC();
+
+
+
+		TC1->COUNT16.CTRLA.reg &= ((~(TC_CTRLA_ENABLE)) & (~(TC_CTRLA_PRESCALER_DIV1024)) & (~(TC_CTRLA_PRESCALER_DIV256)) & (~(TC_CTRLA_PRESCALER_DIV64)) & (~(TC_CTRLA_PRESCALER_DIV16)) & (~(TC_CTRLA_PRESCALER_DIV4)) & (~(TC_CTRLA_PRESCALER_DIV2)) & (~(TC_CTRLA_PRESCALER_DIV1)));
+		UTIMERLIB_WAIT_SYNC();
+
+		TC1->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV16;
+		UTIMERLIB_WAIT_SYNC();
 
 
 		if (us > 8738) {
@@ -90,24 +104,27 @@
 			__remaining = _remaining = (us / 0.133333333 + 0.5); // +0.5 is same as round
 		}
 
+		if (__remaining != 0) {
+			__remaining = _remaining = (((uint16_t) 0xffff) - __remaining); // Remaining is max value minus remaining
+		}
+
 		if (__overflows == 0) {
 			_loadRemaining();
 			_remaining = 0;
 		} else {
-			TC1->COUNT16.CC[1].reg = 0xFFFF;
-			// Skip: while (TC1->COUNT16.SYNCBUSY.reg); // sync
+			TC1->COUNT16.COUNT.reg = 0;
 		}
 
 
+		TC1->COUNT16.INTENSET.reg = 0;
 		TC1->COUNT16.INTENSET.bit.OVF = 1;
 		// Enable InterruptVector
 		NVIC_EnableIRQ(TC1_IRQn);
 
 		// Count on event
-		TC1->COUNT16.EVCTRL.bit.EVACT = TC_EVCTRL_EVACT_COUNT_Val;
-		// This works but should be after EVSYS setup according to the data sheet
-		//TC1->COUNT16.EVCTRL.bit.TCEI = 1;
-		//TC1->COUNT16.CTRLA.bit.ENABLE = 1;
+		//TC1->COUNT16.EVCTRL.bit.EVACT = TC_EVCTRL_EVACT_COUNT_Val;
+
+		TC1->COUNT16.CTRLA.bit.ENABLE = 1;
 	}
 
 
@@ -127,34 +144,52 @@
 		GCLK_TC/1024	1024		117,1875Hz	8,533333333us	 559240,533333333us;  559,240533333333ms
 		*/
 
-		MCLK->APBAMASK.bit.TC1_ = 1;
-		GCLK->PCHCTRL[TC1_GCLK_ID].bit.GEN = 0;
-		GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN = 1;
-		while(GCLK->PCHCTRL[TC1_GCLK_ID].bit.CHEN != 1); // sync
+
+
+
+		// Enable the TC bus clock
+		GCLK->PCHCTRL[TC1_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | GCLK_PCHCTRL_CHEN;
+		while(GCLK->SYNCBUSY.reg); // sync
 
 		TC1->COUNT16.CTRLA.bit.ENABLE = 0;
-		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+		UTIMERLIB_WAIT_SYNC();
 
 		TC1->COUNT16.CTRLA.bit.MODE = TC_CTRLA_MODE_COUNT16_Val;
-		TC1->COUNT16.CTRLA.bit.PRESCALER = TC_CTRLA_PRESCALER_DIV16_Val;
-		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+		UTIMERLIB_WAIT_SYNC();
+
+
+
+		TC1->COUNT16.CTRLA.reg &= ((~(TC_CTRLA_ENABLE)) & (~(TC_CTRLA_PRESCALER_DIV1024)) & (~(TC_CTRLA_PRESCALER_DIV256)) & (~(TC_CTRLA_PRESCALER_DIV64)) & (~(TC_CTRLA_PRESCALER_DIV16)) & (~(TC_CTRLA_PRESCALER_DIV4)) & (~(TC_CTRLA_PRESCALER_DIV2)) & (~(TC_CTRLA_PRESCALER_DIV1)));
+		UTIMERLIB_WAIT_SYNC();
+
+		TC1->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1024;
+		UTIMERLIB_WAIT_SYNC();
 
 
 		__overflows = _overflows = s / 0.559240533333333;
 		__remaining = _remaining = (s - (0.559240533333333 * _overflows)) / 0.000008533333333 + 0.5; // +0.5 is same as round
 
-		TC1->COUNT16.CC[1].reg = 0xFFFF;
-		// Skip: while (TC1->COUNT16.SYNCBUSY.reg); // sync
+		if (__remaining != 0) {
+			__remaining = _remaining = (((uint16_t) 0xffff) - __remaining); // Remaining is max value minus remaining
+		}
 
+		if (__overflows == 0) {
+			_loadRemaining();
+			_remaining = 0;
+		} else {
+			TC1->COUNT16.COUNT.reg = 0;
+		}
+
+
+		TC1->COUNT16.INTENSET.reg = 0;
 		TC1->COUNT16.INTENSET.bit.OVF = 1;
 		// Enable InterruptVector
 		NVIC_EnableIRQ(TC1_IRQn);
 
 		// Count on event
-		TC1->COUNT16.EVCTRL.bit.EVACT = TC_EVCTRL_EVACT_COUNT_Val;
-		// This works but should be after EVSYS setup according to the data sheet
-		//TC1->COUNT16.EVCTRL.bit.TCEI = 1;
-		//TC1->COUNT16.CTRLA.bit.ENABLE = 1;
+		//TC1->COUNT16.EVCTRL.bit.EVACT = TC_EVCTRL_EVACT_COUNT_Val;
+
+		TC1->COUNT16.CTRLA.bit.ENABLE = 1;
 	}
 
 
@@ -165,8 +200,7 @@
 	 * Note: This is device-dependant
 	 */
 	void uTimerLib::_loadRemaining() {
-		TC1->COUNT16.CC[1].reg = _remaining;
-		while (TC1->COUNT16.SYNCBUSY.reg); // sync
+		TC1->COUNT16.COUNT.reg = _remaining;
 	}
 
 	/**
@@ -177,7 +211,7 @@
 	void uTimerLib::clearTimer() {
 		_type = UTIMERLIB_TYPE_OFF;
 
-		TC1->COUNT16.INTENSET.bit.OVF = 1;
+		TC1->COUNT16.INTENSET.reg = 0;
 		// Disable InterruptVector
 		NVIC_DisableIRQ(TC1_IRQn);
 	}
@@ -211,13 +245,9 @@
 				} else {
 					_overflows = __overflows;
 					_remaining = __remaining;
-
-						TC1->COUNT16.CC[1].reg = 0xFFFF;
 				}
 			}
 			_cb();
-		} else if (_overflows > 0) {
-			TC1->COUNT16.CC[1].reg = 0xFFFF;
 		}
 	}
 
@@ -237,15 +267,13 @@
 	 *
 	 * Note: This is device-dependant
 	 */
-	void TC2_Handler() {
-		// Overflow - Nothing, we will use compare to max value instead to unify behaviour
+	void TC1_Handler() {
 		if (TC1->COUNT16.INTFLAG.bit.OVF == 1) {
 			TC1->COUNT16.INTENSET.bit.OVF = 1;  // Clear flag
+			TimerLib._interrupt();
 		}
-		// Compare
 		if (TC1->COUNT16.INTFLAG.bit.MC0 == 1) {
 			TC1->COUNT16.INTENSET.bit.MC0 = 1;  // Clear flag
-			TimerLib._interrupt();
 		}
 	}
 

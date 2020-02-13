@@ -1,4 +1,4 @@
-# Arduino tiny and cross-device compatible timer library - uTimerLib #
+ #Arduino tiny and cross-device compatible timer library - uTimerLib #
 
 Master status:   [![Build Status](https://travis-ci.org/Naguissa/uTimerLib.svg?branch=master)](https://travis-ci.org/Naguissa/uTimerLib)
 
@@ -60,11 +60,12 @@ For manual installation:
  * Rename to uTimerLib.zip
  * Install library on Arduino
 
-## Documentation ##
+## Documentation and extras ##
 
-You can find all documentation opening /doc/index.html
+You can find all documentation and extras in this repository: https://github.com/Naguissa/uTimerLib_doc_and_extras
 
 Due GitHub limitations HTML documentation is not avaliable online, you need to download the zip.
+
 
 
 ## Examples ##
