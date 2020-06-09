@@ -64,7 +64,7 @@ For manual installation:
 
 You can find all documentation and extras in this repository: https://github.com/Naguissa/uTimerLib_doc_and_extras
 
-Due GitHub limitations HTML documentation is not avaliable online, you need to download the zip.
+You can read documentation online here: https://naguissa.github.io/uTimerLib_doc_and_extras/
 
 
 
