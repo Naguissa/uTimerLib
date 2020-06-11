@@ -90,7 +90,8 @@ Look in extras folder for datasheets and extra info
 Any code contribution, report or comment are always welcome. Don't hesitate to use GitHub for that.
 
 
-You can make a donation via PayPal: https://paypal.me/foroelectro
+ * You can sponsor this project using GitHub's Sponsor button: https://github.com/Naguissa/uTimerLib
+ * You can make a donation via PayPal: https://paypal.me/foroelectro
 
 
 Thanks for your support.
