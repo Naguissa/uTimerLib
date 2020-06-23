@@ -3,6 +3,7 @@
  * \brief Arduino tiny and cross-device compatible timer library.
  *
  * Timers used by each microcontroller:
+ *		* Atmel ATtiny X5:	Timer1 (2nd timer) - https://github.com/damellis/attiny and https://github.com/SpenceKonde/ATTinyCore (25, 45 and 85)
  *		* Atmel AVR 32U4:	Timer3 (4rd timer)
  *		* Atmel AVR other:	Timer2 (3rd timer)
  *		* STM32:			Timer3 (3rd timer)
@@ -25,7 +26,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.5.0
+ * @version 1.6.0
  */
 #ifdef _VARIANT_ARDUINO_STM32_
 #ifndef _uTimerLib_IMP_

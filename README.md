@@ -12,6 +12,7 @@ Supports Arduino AVR, SAM, STM32, ESP8266, ESP32 and SAMD21 microcontrollers.
 ## Current status ##
 
 Currently suported architectures:
+ - Atmel ATtiny 25, 45 and 85: Experimental. https://github.com/damellis/attiny and https://github.com/SpenceKonde/ATTinyCore cores
  - AVR (included 32U4)
  - STM32 (both Roger Clark and ST cores)
  - SAM (Arduino Due)
@@ -25,6 +26,7 @@ Currently suported architectures:
 
 Depending on wich architecture this library uses one or another device timer. Take in mind this because can caause conflicts with other libraries:
 
+  - Atmel ATtiny: Timer1 (2nd timer)
  - AVR: Timer2 (3rd timer)
  - STM32: Timer3 (3rd timer)
  - SAM: TC3 (Timer1, channel 0)

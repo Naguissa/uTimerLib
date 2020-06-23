@@ -3,6 +3,7 @@
  * \brief Arduino tiny and cross-device compatible timer library.
  *
  * Timers used by each microcontroller:
+ *		* Atmel ATtiny X5:	Timer1 (2nd timer) - https://github.com/damellis/attiny and https://github.com/SpenceKonde/ATTinyCore (25, 45 and 85)
  *		* Atmel AVR 32U4:	Timer3 (4rd timer)
  *		* Atmel AVR other:	Timer2 (3rd timer)
  *		* STM32:			Timer3 (3rd timer)
@@ -25,7 +26,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.5.0
+ * @version 1.6.0
  */
 
 // # if !defined(_uTimerLib_cpp_) && defined(_uTimerLib_IMP_)
@@ -107,9 +108,14 @@
 
 #endif
 
-#if defined(__AVR_ATmega32U4__) || defined(ARDUINO_ARCH_AVR)
+#if (defined(__AVR_ATmega32U4__) || defined(ARDUINO_ARCH_AVR)) && !defined(ARDUINO_attiny) && !defined(ARDUINO_AVR_ATTINYX4) && !defined(ARDUINO_AVR_ATTINYX5) && !defined(ARDUINO_AVR_ATTINYX7) && !defined(ARDUINO_AVR_ATTINYX8) && !defined(ARDUINO_AVR_ATTINYX61) && !defined(ARDUINO_AVR_ATTINY43) && !defined(ARDUINO_AVR_ATTINY828) && !defined(ARDUINO_AVR_ATTINY1634) && !defined(ARDUINO_AVR_ATTINYX313)
 	#include "hardware/uTimerLib.AVR.cpp"
 #endif
+
+#if defined(ARDUINO_ARCH_AVR) && (defined(ARDUINO_attiny) ||defined(ARDUINO_AVR_ATTINYX5))
+	#include "hardware/uTimerLib.ATTINY.cpp"
+#endif
+
 #ifdef _VARIANT_ARDUINO_STM32_
 	#include "hardware/uTimerLib.STM32.cpp"
 #endif
@@ -127,6 +133,6 @@
 #endif
 
 
-#if !defined(__AVR_ATmega32U4__) && !defined(ARDUINO_ARCH_AVR) && !defined(_VARIANT_ARDUINO_STM32_) && !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_SAM) && !defined(_SAMD21_) && !defined(__SAMD51__)
+#if !defined(__AVR_ATmega32U4__) && !defined(ARDUINO_ARCH_AVR) && !defined(_VARIANT_ARDUINO_STM32_) && !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_SAM) && !defined(_SAMD21_) && !defined(__SAMD51__) && !defined(ARDUINO_attiny) && !defined(ARDUINO_AVR_ATTINYX5)
 	#include "hardware/uTimerLib.UNSUPPORTED.cpp"
 #endif

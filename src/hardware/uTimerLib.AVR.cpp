@@ -3,6 +3,7 @@
  * \brief Arduino tiny and cross-device compatible timer library.
  *
  * Timers used by each microcontroller:
+ *		* Atmel ATtiny X5:	Timer1 (2nd timer) - https://github.com/damellis/attiny and https://github.com/SpenceKonde/ATTinyCore (25, 45 and 85)
  *		* Atmel AVR 32U4:	Timer3 (4rd timer)
  *		* Atmel AVR other:	Timer2 (3rd timer)
  *		* STM32:			Timer3 (3rd timer)
@@ -25,10 +26,10 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.5.0
+ * @version 1.6.0
  */
 
-#if defined(__AVR_ATmega32U4__) || defined(ARDUINO_ARCH_AVR)
+#if (defined(__AVR_ATmega32U4__) || defined(ARDUINO_ARCH_AVR)) && !defined(ARDUINO_attiny)
 #if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
 	#define _uTimerLib_IMP_
 	#include "uTimerLib.cpp"
@@ -46,16 +47,17 @@
 			return;
 		}
 
+		unsigned char CSMask = 0;
+		// For this notes, we asume 16MHz CPU. We recalculate 'us' if not:
+		if (F_CPU != 16000000) {
+			us = F_CPU / 16000000 * us;
+		}
+
 		// Leonardo and other 32U4 boards
 		#ifdef __AVR_ATmega32U4__
-			unsigned char CSMask = 0;
-			// For this notes, we asume 16MHz CPU. We recalculate 'us' if not:
-			if (F_CPU != 16000000) {
-				us = F_CPU / 16000000 * us;
-			}
 			TIMSK3 &= ~((1 << TOIE3) | (1 << OCIE3A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 			cli();
-			// AVR, using Timer2. Counts at 16MHz
+			// 32U4, using Timer3. Counts at 16MHz
 			/*
 			Prescaler: TCCR3B; 3 last bits, CS30, CS31 and CS32
 
@@ -102,11 +104,6 @@
 			TIMSK3 |= (1 << TOIE3);		// Enable overflow interruption when 0
 			sei();
 		#else
-			unsigned char CSMask = 0;
-			// For this notes, we asume 16MHz CPU. We recalculate 'us' if not:
-			if (F_CPU != 16000000) {
-				us = F_CPU / 16000000 * us;
-			}
 			TIMSK2 &= ~((1 << TOIE2) | (1 << OCIE2A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 			cli();
 			// AVR, using Timer2. Counts at 16MHz
@@ -179,14 +176,14 @@
 			return;
 		}
 
+		unsigned char CSMask = 0;
+		// For this notes, we asume 16MHz CPU. We recalculate 's' if not:
+		if (F_CPU != 16000000) {
+			s = F_CPU / 16000000 * s;
+		}
+
 		// Leonardo and other 32U4 boards
 		#ifdef __AVR_ATmega32U4__
-			unsigned char CSMask = 0;
-			// For this notes, we asume 16MHz CPU. We recalculate 's' if not:
-			if (F_CPU != 16000000) {
-				s = F_CPU / 16000000 * s;
-			}
-
 			TIMSK3 &= ~((1 << TOIE3) | (1 << OCIE3A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 			cli();
 
@@ -225,12 +222,6 @@
 
 		#else
 			// Arduino AVR
-			unsigned char CSMask = 0;
-			// For this notes, we asume 16MHz CPU. We recalculate 's' if not:
-			if (F_CPU != 16000000) {
-				s = F_CPU / 16000000 * s;
-			}
-
 			TIMSK2 &= ~((1 << TOIE2) | (1 << OCIE2A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 			cli();
 
