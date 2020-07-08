@@ -26,113 +26,117 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.0
+ * @version 1.6.1
  */
 
 // # if !defined(_uTimerLib_cpp_) && defined(_uTimerLib_IMP_)
 #ifndef _uTimerLib_cpp_
-	#define _uTimerLib_cpp_
-	#include "uTimerLib.h"
+    #define _uTimerLib_cpp_
+    #include "uTimerLib.h"
 
-	// extern uTimerLib TimerLib;
+    // extern uTimerLib TimerLib;
 
-	#ifdef _VARIANT_ARDUINO_STM32_
-		uTimerLib *uTimerLib::_instance = NULL;
-	#endif
+    #if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
+            uTimerLib *uTimerLib::_instance = NULL;
+    #endif
 
-	/**
-	 * \brief Constructor
-	 */
-	uTimerLib::uTimerLib() {
-		#ifdef _VARIANT_ARDUINO_STM32_
-			_instance = this;
-			clearTimer();
-		#endif
-	}
+    /**
+     * \brief Constructor
+     */
+    uTimerLib::uTimerLib() {
+            #ifdef _VARIANT_ARDUINO_STM32_
+                    _instance = this;
+                    clearTimer();
+            #endif
+    }
 
-	/**
-	 * \brief Attaches a callback function to be executed each us microseconds
-	 *
-	 * @param	cb		Callback function to be called
-	 * @param	us		Interval in microseconds
-	 */
-	void uTimerLib::setInterval_us(void (* cb)(), unsigned long int us) {
-		clearTimer();
-		_cb = cb;
-		_type = UTIMERLIB_TYPE_INTERVAL;
-		_attachInterrupt_us(us);
-	}
-
-
-	/**
-	 * \brief Attaches a callback function to be executed once when us microseconds have passed
-	 *
-	 * @param	cb		Callback function to be called
-	 * @param	us		Timeout in microseconds
-	 */
-	void uTimerLib::setTimeout_us(void (* cb)(), unsigned long int us) {
-		clearTimer();
-		_cb = cb;
-		_type = UTIMERLIB_TYPE_TIMEOUT;
-		_attachInterrupt_us(us);
-	}
+    /**
+     * \brief Attaches a callback function to be executed each us microseconds
+     *
+     * @param	cb		Callback function to be called
+     * @param	us		Interval in microseconds
+     */
+    void uTimerLib::setInterval_us(void (* cb)(), unsigned long int us) {
+            clearTimer();
+            _cb = cb;
+            _type = UTIMERLIB_TYPE_INTERVAL;
+            _attachInterrupt_us(us);
+    }
 
 
-	/**
-	 * \brief Attaches a callback function to be executed each s seconds
-	 *
-	 * @param	cb		Callback function to be called
-	 * @param	s		Interval in seconds
-	 */
-	void uTimerLib::setInterval_s(void (* cb)(), unsigned long int s) {
-		clearTimer();
-		_cb = cb;
-		_type = UTIMERLIB_TYPE_INTERVAL;
-		_attachInterrupt_s(s);
-	}
+    /**
+     * \brief Attaches a callback function to be executed once when us microseconds have passed
+     *
+     * @param	cb		Callback function to be called
+     * @param	us		Timeout in microseconds
+     */
+    void uTimerLib::setTimeout_us(void (* cb)(), unsigned long int us) {
+            clearTimer();
+            _cb = cb;
+            _type = UTIMERLIB_TYPE_TIMEOUT;
+            _attachInterrupt_us(us);
+    }
 
 
-	/**
-	 * \brief Attaches a callback function to be executed once when s seconds have passed
-	 *
-	 * @param	cb		Callback function to be called
-	 * @param	s		Timeout in seconds
-	 */
-	void uTimerLib::setTimeout_s(void (* cb)(), unsigned long int s) {
-		clearTimer();
-		_cb = cb;
-		_type = UTIMERLIB_TYPE_TIMEOUT;
-		_attachInterrupt_s(s);
-	}
+    /**
+     * \brief Attaches a callback function to be executed each s seconds
+     *
+     * @param	cb		Callback function to be called
+     * @param	s		Interval in seconds
+     */
+    void uTimerLib::setInterval_s(void (* cb)(), unsigned long int s) {
+            clearTimer();
+            _cb = cb;
+            _type = UTIMERLIB_TYPE_INTERVAL;
+            _attachInterrupt_s(s);
+    }
 
 
-#endif
+    /**
+     * \brief Attaches a callback function to be executed once when s seconds have passed
+     *
+     * @param	cb		Callback function to be called
+     * @param	s		Timeout in seconds
+     */
+    void uTimerLib::setTimeout_s(void (* cb)(), unsigned long int s) {
+            clearTimer();
+            _cb = cb;
+            _type = UTIMERLIB_TYPE_TIMEOUT;
+            _attachInterrupt_s(s);
+    }
 
-#if (defined(__AVR_ATmega32U4__) || defined(ARDUINO_ARCH_AVR)) && !defined(ARDUINO_attiny) && !defined(ARDUINO_AVR_ATTINYX4) && !defined(ARDUINO_AVR_ATTINYX5) && !defined(ARDUINO_AVR_ATTINYX7) && !defined(ARDUINO_AVR_ATTINYX8) && !defined(ARDUINO_AVR_ATTINYX61) && !defined(ARDUINO_AVR_ATTINY43) && !defined(ARDUINO_AVR_ATTINY828) && !defined(ARDUINO_AVR_ATTINY1634) && !defined(ARDUINO_AVR_ATTINYX313)
-	#include "hardware/uTimerLib.AVR.cpp"
-#endif
+    #define UTIMERLIB_HW_COMPILE
 
-#if defined(ARDUINO_ARCH_AVR) && (defined(ARDUINO_attiny) ||defined(ARDUINO_AVR_ATTINYX5))
-	#include "hardware/uTimerLib.ATTINY.cpp"
-#endif
+    // Now load each hardware variation support:
 
-#ifdef _VARIANT_ARDUINO_STM32_
-	#include "hardware/uTimerLib.STM32.cpp"
-#endif
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
-	#include "hardware/uTimerLib.ESP.cpp"
-#endif
-#ifdef ARDUINO_ARCH_SAM
-	#include "hardware/uTimerLib.SAM.cpp"
-#endif
-#ifdef _SAMD21_
-	#include "hardware/uTimerLib.SAMD21.cpp"
-#endif
-#ifdef __SAMD51__
-	#include "hardware/uTimerLib.SAMD51.cpp"
-#endif
+    #if (defined(__AVR_ATmega32U4__) || defined(ARDUINO_ARCH_AVR)) && !defined(ARDUINO_attiny) && !defined(ARDUINO_AVR_ATTINYX4) && !defined(ARDUINO_AVR_ATTINYX5) && !defined(ARDUINO_AVR_ATTINYX7) && !defined(ARDUINO_AVR_ATTINYX8) && !defined(ARDUINO_AVR_ATTINYX61) && !defined(ARDUINO_AVR_ATTINY43) && !defined(ARDUINO_AVR_ATTINY828) && !defined(ARDUINO_AVR_ATTINY1634) && !defined(ARDUINO_AVR_ATTINYX313)
+            #include "hardware/uTimerLib.AVR.cpp"
+    #endif
+
+    #if defined(ARDUINO_ARCH_AVR) && (defined(ARDUINO_attiny) ||defined(ARDUINO_AVR_ATTINYX5))
+            #include "hardware/uTimerLib.ATTINY.cpp"
+    #endif
+
+    #if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
+        #include "hardware/uTimerLib.STM32.cpp"
+    #endif
+
+    #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+            #include "hardware/uTimerLib.ESP.cpp"
+    #endif
+    #ifdef ARDUINO_ARCH_SAM
+            #include "hardware/uTimerLib.SAM.cpp"
+    #endif
+    #ifdef _SAMD21_
+            #include "hardware/uTimerLib.SAMD21.cpp"
+    #endif
+    #ifdef __SAMD51__
+            #include "hardware/uTimerLib.SAMD51.cpp"
+    #endif
 
 
-#if !defined(__AVR_ATmega32U4__) && !defined(ARDUINO_ARCH_AVR) && !defined(_VARIANT_ARDUINO_STM32_) && !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_SAM) && !defined(_SAMD21_) && !defined(__SAMD51__) && !defined(ARDUINO_attiny) && !defined(ARDUINO_AVR_ATTINYX5)
-	#include "hardware/uTimerLib.UNSUPPORTED.cpp"
+    #if !defined(__AVR_ATmega32U4__) && !defined(ARDUINO_ARCH_AVR) && !defined(_VARIANT_ARDUINO_STM32_) && !defined(ARDUINO_ARCH_STM32) && !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_SAM) && !defined(_SAMD21_) && !defined(__SAMD51__) && !defined(ARDUINO_attiny) && !defined(ARDUINO_AVR_ATTINYX5)
+        #include "hardware/uTimerLib.UNSUPPORTED.cpp"
+    #endif
+
 #endif

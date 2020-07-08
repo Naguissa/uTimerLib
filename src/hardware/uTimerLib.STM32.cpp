@@ -26,9 +26,9 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.0
+ * @version 1.6.1
  */
-#ifdef _VARIANT_ARDUINO_STM32_
+#if (defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)) && defined(UTIMERLIB_HW_COMPILE)
 #ifndef _uTimerLib_IMP_
 	#define _uTimerLib_IMP_
 	#include "uTimerLib.cpp"
@@ -54,7 +54,7 @@
 			Timer3->setCaptureCompare(1, us, MICROSEC_COMPARE_FORMAT);
 			if (_toInit) {
 				_toInit = false;
-				Timer3->attachInterrupt(1, uTimerLib::interrupt);
+				Timer3->attachInterrupt((uint32_t) 1, uTimerLib::interrupt);
 			}
 			Timer3->resume();
 
@@ -95,7 +95,7 @@
 			Timer3->setCaptureCompare(1, (unsigned long int) 1000000, MICROSEC_COMPARE_FORMAT);
 			if (_toInit) {
 				_toInit = false;
-				Timer3->attachInterrupt(1, uTimerLib::interrupt);
+				Timer3->attachInterrupt((uint32_t) 1, uTimerLib::interrupt);
 			}
 			Timer3->resume();
 
@@ -170,7 +170,7 @@
 	 */
 	// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
 	#ifdef BOARD_NAME
-		void uTimerLib::interrupt(HardwareTimer *ignored) {
+		callback_function_t uTimerLib::interrupt() {
 			_instance->_interrupt();
 		}
 

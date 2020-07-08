@@ -25,7 +25,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.0
+ * @version 1.6.1
  */
 /** \file uTimerLib.h
  *   \brief uTimerLib header file
@@ -94,7 +94,7 @@
 			#ifdef _VARIANT_ARDUINO_STM32_
 				// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
 				#ifdef BOARD_NAME
-					static void interrupt(HardwareTimer*);
+					static callback_function_t interrupt();
 
 				// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
 				#else
