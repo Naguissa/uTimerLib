@@ -26,7 +26,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.1
+ * @version 1.6.2
  */
 #if (defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)) && defined(UTIMERLIB_HW_COMPILE)
 #ifndef _uTimerLib_IMP_
@@ -51,7 +51,7 @@
 			Timer3->setMode(1, TIMER_OUTPUT_COMPARE);
 			__overflows = _overflows = __remaining = _remaining = 0;
 			Timer3->setOverflow(us, MICROSEC_FORMAT);
-			Timer3->setCaptureCompare(1, us, MICROSEC_COMPARE_FORMAT);
+			Timer3->setCaptureCompare(1, us - 1, MICROSEC_COMPARE_FORMAT);
 			if (_toInit) {
 				_toInit = false;
 				Timer3->attachInterrupt((uint32_t) 1, uTimerLib::interrupt);
