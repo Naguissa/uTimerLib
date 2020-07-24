@@ -26,7 +26,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.2
+ * @version 1.6.3
  */
 #if (defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)) && defined(UTIMERLIB_HW_COMPILE)
 #ifndef _uTimerLib_IMP_
@@ -54,7 +54,7 @@
 			Timer3->setCaptureCompare(1, us - 1, MICROSEC_COMPARE_FORMAT);
 			if (_toInit) {
 				_toInit = false;
-				Timer3->attachInterrupt((uint32_t) 1, uTimerLib::interrupt);
+				Timer3->attachInterrupt(1, uTimerLib::interrupt);
 			}
 			Timer3->resume();
 
@@ -172,6 +172,7 @@
 	#ifdef BOARD_NAME
 		callback_function_t uTimerLib::interrupt() {
 			_instance->_interrupt();
+			return (callback_function_t) 0;
 		}
 
 	// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
