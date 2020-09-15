@@ -11,6 +11,7 @@
 
 #ifndef LED_BUILTIN
 	// change to fit your needs
+	// Use 0 or 1 to use DigiSpark AVR internal LED (depending revision, mine is 1)
 	#define LED_BUILTIN 13
 #endif
 

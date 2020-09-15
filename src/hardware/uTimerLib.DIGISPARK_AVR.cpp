@@ -30,16 +30,10 @@
  * @version 1.6.4
  */
 
-#if (defined(ARDUINO_ARCH_AVR) && (defined(ARDUINO_attiny) || defined(ARDUINO_AVR_ATTINYX4) || defined(ARDUINO_AVR_ATTINYX5) || defined(ARDUINO_AVR_ATTINYX7) || defined(ARDUINO_AVR_ATTINYX8) || defined(ARDUINO_AVR_ATTINYX61) || defined(ARDUINO_AVR_ATTINY43) || defined(ARDUINO_AVR_ATTINY828) || defined(ARDUINO_AVR_ATTINY1634) || defined(ARDUINO_AVR_ATTINYX313))) && defined(UTIMERLIB_HW_COMPILE)
+#if defined(ARDUINO_ARCH_AVR) && defined(ARDUINO_AVR_DIGISPARK) && defined(UTIMERLIB_HW_COMPILE)
 #if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
 	#define _uTimerLib_IMP_
 	#include "uTimerLib.cpp"
-
-
-	#ifndef TCCR1A
-		#define TCCR1A GTCCR
-	#endif
-
 
 	/**
 	 * \brief Sets up the timer, calculation variables and interrupts for desired ms microseconds
@@ -58,79 +52,39 @@
 		if (F_CPU != 16000000) {
 			us = F_CPU / 16000000 * us;
 		}
-		TIMSK &= ~((1 << TOIE1) | (1 << OCIE1A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
+		TIMSK &= ~((1 << TOIE0) | (1 << OCIE1A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 		cli();
-		// ATTiny, using Timer1. Counts at 16MHz (it other speed is used we recalculate us before)
+		// Disgispark AVR, using Timer0. Counts at 16MHz (it other speed is used we recalculate us before)
 		/*
-		Prescaler: TCCR1; 4 last bits, CS10, CS11, CS12 and CS13
+		Prescaler: TCCR0B; 3 last bits, CS00, CS01 and CS02
 
-		CS13	CS12	CS11	CS10	Freq		Divisor		Base Delay		Overflow delay
-		  0		  0		  0		 0		stopped		    -		    -			        -
-		  0		  0		  0		 1		16MHz		    1		   0.0625us			    16us
-		  0		  0		  1		 0		16MHz		    2		   0.125us			    32us
-		  0		  0		  1		 1		16MHz		    4		   0.25us			    64us
-		  0		  1		  0		 0		16MHz		    8		   0.5us			   128us
-		  0		  1		  0		 1		16MHz		   16		   1us				   256us
-		  0		  1		  1		 0		16MHz		   32		   2us				   512us
-		  0		  1		  1		 1		16MHz		   64		   4us				  1024us
-		  1		  0		  0		 0		16MHz		  128		   8us				  2048us
-		  1		  0		  0		 1		16MHz		  256		  16us				  4096us
-		  1		  0		  1		 0		16MHz		  512		  32us				  8192us
-		  1		  0		  1		 1		16MHz		 1024		  64us				 16384us
-		  1		  1		  0		 0		16MHz		 2048		 128us				 32768us
-		  1		  1		  0		 1		16MHz		 4096		 256us				 65536us
-		  1		  1		  1		 0		16MHz		 8192		 512us				131072us
-		  1		  1		  1		 1		16MHz		16384		1024us				262144us
+		CS02	CS01	CS00	Freq		Divisor		Base Delay		Overflow delay
+		0		  0		 0		stopped		    -		    -			        -
+		0		  0		 1		16MHz		    1		   0.0625us			    16us
+		0		  1		 0		16MHz		    8		   0.5us			   128us
+		0		  1		 1		16MHz		   64		   4us				  1024us
+		1		  0		 0		16MHz		  256		  16us				  4096us
+		1		  0		 1		16MHz		 1024		  64us				 16384us
 		*/
-		if (us >= 262144) {
-			CSMask = (1<<CS13) | (1<<CS12) | (1<<CS11) | (1<<CS10);
-			_overflows = us / 262144;
-			_remaining = 256 - ((us % 262144) / 1024 + 0.5); // + 0.5 is round for positive numbers
+		if (us >= 16384) {
+			CSMask = (1<<CS02) | (1<<CS00);
+			_overflows = us / 16384;
+			_remaining = 256 - ((us % 16384) / 64 + 0.5); // + 0.5 is round for positive numbers
 		} else {
-			if (us >= 131072) {
-				CSMask = (1<<CS13) | (1<<CS12) | (1<<CS11) | (1<<CS10);
-				_remaining = 256 - (us / 1024 + 0.5); // + 0.5 is round for positive numbers
-			} else if (us >= 65536) {
-				CSMask = (1<<CS13) | (1<<CS12) | (1<<CS11);
-				_remaining = 256 - (us / 512 + 0.5); // + 0.5 is round for positive numbers
-			} else if (us >= 32768) {
-				CSMask = (1<<CS13) | (1<<CS12) | (1<<CS10);
-				_remaining = 256 - (us / 256 + 0.5); // + 0.5 is round for positive numbers
-			} else if (us >= 16384) {
-				CSMask = (1<<CS13) | (1<<CS12);
-				_remaining = 256 - (us / 128 + 0.5); // + 0.5 is round for positive numbers
-			} else if (us >= 8192) {
-				CSMask = (1<<CS13) | (1<<CS11) | (1<<CS10);
+			if (us >= 4096) {
+				CSMask = (1<<CS02) | (1<<CS00);
 				_remaining = 256 - (us / 64 + 0.5); // + 0.5 is round for positive numbers
-			} else if (us >= 4096) {
-				CSMask = (1<<CS13) | (1<<CS11);
-				_remaining = 256 - (us / 32 + 0.5);
-			} else if (us >= 2048) {
-				CSMask = (1<<CS13) | (1<<CS10);
-				_remaining = 256 - (us / 16 + 0.5);
 			} else if (us >= 1024) {
-				CSMask = (1<<CS13);
-				_remaining = 256 - (us / 8 + 0.5);
-			} else if (us >= 512) {
-				CSMask = (1<<CS12) | (1<<CS11) | (1<<CS10);
-				_remaining = 256 - (us / 4 + 0.5);
-			} else if (us >= 256) {
-				CSMask = (1<<CS12) | (1<<CS11);
-				_remaining = 256 - (us / 2 + 0.5);
+				CSMask = (1<<CS02);
+				_remaining = 256 - (us / 16 + 0.5); // + 0.5 is round for positive numbers
 			} else if (us >= 128) {
-				CSMask = (1<<CS12) | (1<<CS10);
-				_remaining = 256 - us;
-			} else if (us >= 64) {
-				CSMask = (1<<CS12);
-				_remaining = 256 - (us * 2);
-			} else if (us >= 32) {
-				CSMask = (1<<CS11) | (1<<CS10);
-				_remaining = 256 - (us * 4);
+				CSMask = (1<<CS01) | (1<<CS00);
+				_remaining = 256 - (us / 4 + 0.5); // + 0.5 is round for positive numbers
 			} else if (us >= 16) {
-				CSMask = (1<<CS11);
-				_remaining = 256 - (us * 8);
+				CSMask = (1<<CS01);
+				_remaining = 256 - (us * 2 + 0.5); // + 0.5 is round for positive numbers
 			} else {
-				CSMask = (1<<CS10);
+				CSMask = (1<<CS00);
 				_remaining = 256 - (us * 16);
 			}
 			_overflows = 0;
@@ -141,13 +95,13 @@
 		_overflows += 1; // Fix interrupt incorrectly firing just after sei()
 
 		PLLCSR &= ~(1<<PCKE); 		// Internal clock
-		// TCCR1A = (1<<COM1A1);	// Normal operation
 
-		TCCR1 |= (1 << CTC1);  // clear timer on compare match
-		TCCR1 = TCCR1 & ~((1<<CS13) | (1<<CS12) | (1<<CS11) | (1<<CS10)) | CSMask;	// Sets divisor
+		// TCCR0A = (1 << WGM01);             //CTC mode
+		// TCCR0B |= (1 << CTC);  // clear timer on compare match
+		TCCR0B = TCCR0B & ~((1<<CS02) | (1<<CS01) | (1<<CS00)) | CSMask;	// Sets divisor
 
-		TCNT1 = 0;				// Clean timer count
-		TIMSK |= (1 << TOIE1);		// Enable overflow interruption when 0
+		TCNT0 = 0;				// Clean timer count
+		TIMSK |= (1 << TOIE0);		// Enable overflow interruption when 0
 		sei();
 	}
 
@@ -168,33 +122,31 @@
 		if (F_CPU != 16000000) {
 			s = F_CPU / 16000000 * s;
 		}
-		TIMSK &= ~((1 << TOIE1) | (1 << OCIE1A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
+		TIMSK &= ~((1 << TOIE0) | (1 << OCIE1A));	// Disable overflow interruption when 0 + Disable interrupt on compare match
 		cli();
-		// ATTiny, using Timer1. Counts at 16MHz (it other speed is used we recalculate us before)
+		// Disgispark AVR, using Timer0. Counts at 16MHz (it other speed is used we recalculate us before)
 		/*
-		Prescaler: TCCR1; 4 last bits, CS10, CS11, CS12 and CS13
+		Prescaler: TCCR0B; 4 last bits, CS00, CS01, CS02 and CS03
 
-		CS13	CS12	CS11	CS10	Freq		Divisor		Base Delay		Overflow delay
-		  1		  1		  1		 1		16MHz		16384		1024us				262144us
+		CS02	CS01	CS00	Freq		Divisor		Base Delay		Overflow delay
+		1		  0		 1		16MHz		 1024		  64us				 16384us
 		*/
 
-		CSMask = (1<<CS13) | (1<<CS12) | (1<<CS11) | (1<<CS10);
-		_overflows = s * 1000000 / 262144;
-		_remaining = 256 - (((s * 1000000) % 262144) / 1024 + 0.5); // + 0.5 is round for positive numbers
+		CSMask = (1<<CS02) | (1<<CS00);
+		_overflows = s * 1000000 / 16384;
+		_remaining = 256 - (((s * 1000000) % 16384) / 64 + 0.5); // + 0.5 is round for positive numbers
 
 		__overflows = _overflows;
 		__remaining = _remaining;
-		_overflows += 1; // Fix interrupt incorrectly firing just after sei()
 
 		PLLCSR &= ~(1<<PCKE); 		// Internal clock
-		// TCCR1A = (1<<COM1A1);	// Normal operation
-
-		// All '1', so simplify to next line... TCCR1 = TCCR1 & ~((1<<CS13) | (1<<CS12) | (1<<CS11) | (1<<CS10)) | CSMask;	// Sets divisor
-		TCCR1 = TCCR1 | CSMask;	// Sets divisor
+		//		TCCR0A = (1 << WGM01);             //CTC mode
+		// Al 1 except one, so simplify to next line...  TCCR0B = TCCR0B & ~((1<<CS02) | (1<<CS01) | (1<<CS00)) | CSMask;	// Sets divisor
+		TCCR0B = TCCR0B & ~(1<<CS01) | CSMask;	// Sets divisor
 
 		// Clean counter in normal operation, load remaining when overflows == 0
-		TCNT1 = 0;				// Clean timer count
-		TIMSK |= (1 << TOIE1);		// Enable overflow interruption when 0
+		TCNT0 = 0;				// Clean timer count
+		TIMSK |= (1 << TOIE0);		// Enable overflow interruption when 0
 		sei();
 	}
 
@@ -206,7 +158,7 @@
 	 * Note: This is device-dependant
 	 */
 	void uTimerLib::_loadRemaining() {
-		TCNT1 = _remaining;
+		TCNT0 = _remaining;
 	}
 
 	/**
@@ -217,7 +169,7 @@
 	void uTimerLib::clearTimer() {
 		_type = UTIMERLIB_TYPE_OFF;
 
-		TIMSK &= ~(1 << TOIE1);		// Disable overflow interruption when 0
+		TIMSK &= ~(1 << TOIE0);		// Disable overflow interruption when 0
 //		SREG = (SREG & 0b01111111); // Disable interrupts without modifiying other interrupts
 
 	}
@@ -273,7 +225,7 @@
 	 *
 	 * Note: This is device-dependant
 	 */
-	ISR(TIMER1_OVF_vect) {
+	ISR(TIMER0_OVF_vect) {
 		TimerLib._interrupt();
 	}
 

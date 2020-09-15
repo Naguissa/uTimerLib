@@ -3,7 +3,8 @@
  * \brief Arduino tiny and cross-device compatible timer library.
  *
  * Timers used by each microcontroller:
- *		* Atmel ATtiny X5:	Timer1 (2nd timer) - https://github.com/damellis/attiny and https://github.com/SpenceKonde/ATTinyCore (25, 45 and 85)
+ *		* Atmel ATtiny:		Timer1 (2nd timer) - https://github.com/damellis/attiny and https://github.com/SpenceKonde/Disgispark AVRCore (25, 45 and 85)
+ *		* DisgiSpark AVR:	Timer0 (1st timer) - https://github.com/digistump/DigistumpArduino
  *		* Atmel AVR 32U4:	Timer3 (4rd timer)
  *		* Atmel AVR other:	Timer2 (3rd timer)
  *		* STM32:			Timer3 (3rd timer)
@@ -20,13 +21,13 @@
  *		* TimerLib.setTimeout_s(callback_function, seconds);* : callback_function will be called once when seconds have passed.
  *		* TimerLib.clearTimer();* : will clear any timed function if exists.
  *
- * @file hardware/uTimerLib.SAM.cpp
+ * @file hardware/uTimerLib.ATTINY.cpp
  * @copyright Naguissa
  * @author Naguissa
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.3
+ * @version 1.6.4
  */
 #if defined(ARDUINO_ARCH_SAM)  && defined(UTIMERLIB_HW_COMPILE)
 #if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
