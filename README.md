@@ -12,28 +12,30 @@ Supports Arduino AVR, SAM, STM32, ESP8266, ESP32 and SAMD21 microcontrollers.
 ## Current status ##
 
 Currently suported architectures:
- - Atmel ATtiny 25, 45 and 85: Experimental. https://github.com/damellis/attiny and https://github.com/SpenceKonde/ATTinyCore cores
- - AVR (included 32U4)
+ - Atmel ATtiny, Experimental - https://github.com/damellis/attiny and https://github.com/SpenceKonde/Disgispark AVRCore (25, 45 and 85)
+ - DisgiSpark AVR, Experimental - https://github.com/digistump/DigistumpArduino
+ - Atmel AVR 32U4
+ - Atmel AVR, general
  - STM32 (both Roger Clark and ST cores)
- - SAM (Arduino Due)
+ - SAM (Due)
  - ESP8266
  - ESP32
  - SAMD21 (Arduino Zero and Zero MKR; experimental support)
-
  - SAMD51 (Adafruit Feather M4, Adafruit Metro M4; work in progress, not functional -need for a SAMD51 board...)
 
 ## Device timer usage ##
 
 Depending on wich architecture this library uses one or another device timer. Take in mind this because can caause conflicts with other libraries:
-
-  - Atmel ATtiny: Timer1 (2nd timer)
- - AVR: Timer2 (3rd timer)
- - STM32: Timer3 (3rd timer)
- - SAM: TC3 (Timer1, channel 0)
- - ESP8266: Ticker library (inside ESP8266 core, no extras needed)
- - ESP32: OS Timer, one slof of software timer.
- - SAMD21: Timer3 (4th timer), CC0; 16 bit mode
- - SAMD51: Timer1 (2nd timer); 16 bit mode
+ - Atmel ATtiny:	Timer1 (2nd timer).
+ - DisgiSpark AVR:	Timer0 (1st timer).
+ - Atmel AVR 32U4:	Timer3 (4rd timer).
+ - Atmel AVR other:	Timer2 (3rd timer).
+ - STM32:			Timer3 (3rd timer).
+ - SAM (Due):		TC3 (Timer1, channel 0).
+ - ESP8266:			OS Timer, one slot of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation).
+ - ESP32:			OS Timer, one slot of software timer.
+ - SAMD21:			Timer 4, CC0 (TC3).
+ - SAMD51:			Timer 2 (TC1), 16 bits mode.
 
 *Note*: On ESP8266 and ESP32 this library uses "ticker" to manage timer, so it's maximum resolution is miliseconds. On "_us" functions times will be rounded to miliseconds.
 
