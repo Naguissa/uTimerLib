@@ -29,10 +29,11 @@
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
  * @version 1.6.5
  */
-#if (defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)) && defined(UTIMERLIB_HW_COMPILE)
-#ifndef _uTimerLib_IMP_
+#if (defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)) && defined(UTIMERLIB_HW_COMPILE)
+#if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
 	#define _uTimerLib_IMP_
 	#include "uTimerLib.cpp"
+
 
 	/**
 	 * \brief Sets up the timer, calculation variables and interrupts for desired ms microseconds
@@ -45,33 +46,12 @@
 		if (us == 0) { // Not valid
 			return;
 		}
-
-		// STM32, all variants - Max us is: uint32 max / CYCLES_PER_MICROSECOND
-		// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
-		#ifdef BOARD_NAME
-			Timer3->setMode(1, TIMER_OUTPUT_COMPARE);
-			__overflows = _overflows = __remaining = _remaining = 0;
-			Timer3->setOverflow(us, MICROSEC_FORMAT);
-			Timer3->setCaptureCompare(1, us - 1, MICROSEC_COMPARE_FORMAT);
-			if (_toInit) {
-				_toInit = false;
-				Timer3->attachInterrupt(1, uTimerLib::interrupt);
-			}
-			Timer3->resume();
-
-		// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
-		#else
-			Timer3.setMode(TIMER_CH1, TIMER_OUTPUTCOMPARE);
-			__overflows = _overflows = __remaining = _remaining = 0;
-			uint16_t timerOverflow = Timer3.setPeriod(us);
-			Timer3.setCompare(TIMER_CH1, timerOverflow);
-			if (_toInit) {
-				_toInit = false;
-				Timer3.attachInterrupt(TIMER_CH1, uTimerLib::interrupt);
-			}
-			Timer3.refresh();
-			Timer3.resume();
-		#endif
+		unsigned long int ms = (us / 1000) + 0.5;
+		if (ms == 0) {
+			ms = 1;
+		}
+		__overflows = _overflows = __remaining = _remaining = 0;
+		_ticker.attach_ms(ms, uTimerLib::interrupt);
 	}
 
 
@@ -87,34 +67,8 @@
 			return;
 		}
 
-		// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
-		#ifdef BOARD_NAME
-			Timer3->setMode(1, TIMER_OUTPUT_COMPARE);
-			__overflows = _overflows = s;
-			__remaining = _remaining = 0;
-			Timer3->setOverflow((unsigned long int) 1000000, MICROSEC_FORMAT);
-			Timer3->setCaptureCompare(1, (unsigned long int) 1000000, MICROSEC_COMPARE_FORMAT);
-			if (_toInit) {
-				_toInit = false;
-				Timer3->attachInterrupt((uint32_t) 1, uTimerLib::interrupt);
-			}
-			Timer3->resume();
-
-		// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
-		#else
-			Timer3.setMode(TIMER_CH1, TIMER_OUTPUTCOMPARE);
-			Timer3.setPeriod((uint32) 1000000);
-			Timer3.setCompare(TIMER_CH1, 0);
-			Timer3.setCount(1);
-			__overflows = _overflows = s;
-			__remaining = _remaining = 0;
-			if (_toInit) {
-				_toInit = false;
-				Timer3.attachInterrupt(TIMER_CH1, uTimerLib::interrupt);
-			}
-			Timer3.refresh();
-			Timer3.resume();
-		#endif
+		__overflows = _overflows = __remaining = _remaining = 0;
+		_ticker.attach(s, uTimerLib::interrupt);
 	}
 
 
@@ -132,16 +86,7 @@
 	 * Note: This is device-dependant
 	 */
 	void uTimerLib::clearTimer() {
-		_type = UTIMERLIB_TYPE_OFF;
-
-		// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
-		#ifdef BOARD_NAME
-			Timer3->pause();
-
-		// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
-		#else
-			Timer3.pause();
-		#endif
+		_ticker.detach();
 	}
 
 	/**
@@ -154,35 +99,11 @@
 		if (_type == UTIMERLIB_TYPE_OFF) { // Should not happen
 			return;
 		}
-		// We are making X overflows, as much as seconds (none on us). So wee compare upper than 1
-		if (_overflows > 1) {
-			_overflows--;
-		} else {
-			_overflows = __overflows;
-			if (_type == UTIMERLIB_TYPE_TIMEOUT) {
-				clearTimer();
-			}
-			_cb();
+		if (_type == UTIMERLIB_TYPE_TIMEOUT) {
+			clearTimer();
 		}
+		_cb();
 	}
-
-	/**
-	 * \brief Static envelope for Internal intermediate function to control timer interrupts
-	 */
-	// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
-	#ifdef BOARD_NAME
-		callback_function_t uTimerLib::interrupt() {
-			_instance->_interrupt();
-			return (callback_function_t) 0;
-		}
-
-	// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
-	#else
-		void uTimerLib::interrupt() {
-			_instance->_interrupt();
-		}
-	#endif
-
 
 
 	/**
@@ -191,6 +112,16 @@
 	 * Now you can use al functionality calling Timerlib.function
 	 */
 	uTimerLib TimerLib = uTimerLib();
+
+
+	/**
+	 * \brief Attach Interrupts using internal functionality
+	 *
+	 * Note: This is device-dependant
+	 */
+	void uTimerLib::interrupt() {
+		TimerLib._interrupt();
+	}
 
 #endif
 #endif

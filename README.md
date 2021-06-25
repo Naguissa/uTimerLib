@@ -33,11 +33,11 @@ Depending on wich architecture this library uses one or another device timer. Ta
  - STM32:			Timer3 (3rd timer).
  - SAM (Due):		TC3 (Timer1, channel 0).
  - ESP8266:			OS Timer, one slot of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation).
- - ESP32:			OS Timer, one slot of software timer.
+ - ESP32:			OS Hardware Timer.
  - SAMD21:			Timer 4, CC0 (TC3).
  - SAMD51:			Timer 2 (TC1), 16 bits mode.
 
-*Note*: On ESP8266 and ESP32 this library uses "ticker" to manage timer, so it's maximum resolution is miliseconds. On "_us" functions times will be rounded to miliseconds.
+*Note*: On ESP8266 this library uses "ticker" to manage timer, so it's maximum resolution is miliseconds. On "_us" functions times will be rounded to miliseconds.
 
 ## Usage ##
 

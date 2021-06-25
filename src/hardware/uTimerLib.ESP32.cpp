@@ -10,7 +10,7 @@
  *		* STM32:			Timer3 (3rd timer)
  *		* SAM (Due):		TC3 (Timer1, channel 0)
  *		* ESP8266:			OS Timer, one slot of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
- *		* ESP32:			OS Timer, one slot of software timer.
+ *		* ESP32:			OS Hardware Timer.
  *		* SAMD21:			Timer 4, CC0 (TC3). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
  *		* SAMD51:			Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
  *
@@ -27,13 +27,12 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.4
+ * @version 1.6.5
  */
 #if (defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)) && defined(UTIMERLIB_HW_COMPILE)
 #if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
 	#define _uTimerLib_IMP_
 	#include "uTimerLib.cpp"
-
 
 	/**
 	 * \brief Sets up the timer, calculation variables and interrupts for desired ms microseconds
@@ -46,12 +45,12 @@
 		if (us == 0) { // Not valid
 			return;
 		}
-		unsigned long int ms = (us / 1000) + 0.5;
-		if (ms == 0) {
-			ms = 1;
-		}
 		__overflows = _overflows = __remaining = _remaining = 0;
-		_ticker.attach_ms(ms, uTimerLib::interrupt);
+		 const esp_timer_create_args_t timer_args = {
+			.callback = (esp_timer_cb_t) &uTimerLib::interrupt
+		};
+		esp_timer_create(&timer_args, &_timer);
+		esp_timer_start_periodic(_timer, us);
 	}
 
 
@@ -68,7 +67,11 @@
 		}
 
 		__overflows = _overflows = __remaining = _remaining = 0;
-		_ticker.attach(s, uTimerLib::interrupt);
+		 const esp_timer_create_args_t timer_args = {
+			.callback = (esp_timer_cb_t) &uTimerLib::interrupt
+		};
+		esp_timer_create(&timer_args, &_timer);
+		esp_timer_start_periodic(_timer, s * 1000000);
 	}
 
 
@@ -86,7 +89,7 @@
 	 * Note: This is device-dependant
 	 */
 	void uTimerLib::clearTimer() {
-		_ticker.detach();
+		 esp_timer_delete(_timer);
 	}
 
 	/**
@@ -119,7 +122,7 @@
 	 *
 	 * Note: This is device-dependant
 	 */
-	void uTimerLib::interrupt() {
+	void uTimerLib::interrupt(void* arg) {
 		TimerLib._interrupt();
 	}
 

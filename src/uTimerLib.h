@@ -10,7 +10,7 @@
  *		* STM32:			Timer3 (3rd timer)
  *		* SAM (Due):		TC3 (Timer1, channel 0)
  *		* ESP8266:			OS Timer, one slot of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
- *		* ESP32:			OS Timer, one slot of software timer.
+ *		* ESP32:			OS Hardware Timer.
  *		* SAMD21:			Timer 4, CC0 (TC3). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
  *		* SAMD51:			Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
  *
@@ -27,7 +27,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.4
+ * @version 1.6.5
  */
 /** \file uTimerLib.h
  *   \brief uTimerLib header file
@@ -40,9 +40,14 @@
 
 	#include "Arduino.h"
 
-	#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+	#if defined(ARDUINO_ARCH_ESP8266)
 		#include <Ticker.h>  //Ticker Library
 	#endif
+
+	#if defined(ARDUINO_ARCH_ESP32)
+		#include "esp_timer.h"
+	#endif
+
 	// Operation modes
 	/**
 	 * \brief Internal status
@@ -91,6 +96,7 @@
 			 * As timers doesn't give us enougth flexibility for large timings,
 			 * this function implements oferflow control to offer user desired timings.
 			 */
+
 			void _interrupt();
 
 			#ifdef _VARIANT_ARDUINO_STM32_
@@ -104,8 +110,12 @@
 				#endif
 			#endif
 
-			#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
-				#pragma message "ESP8266 / ESP32 can only reach a ms resolution so any us interrupt will be rounded to that"
+			#if defined(ARDUINO_ARCH_ESP32)
+				static void interrupt(void* arg);
+			#endif
+
+			#if defined(ARDUINO_ARCH_ESP8266)
+				#pragma message "ESP8266 can only reach a ms resolution so any us interrupt will be rounded to that"
 				static void interrupt();
 			#endif
 
@@ -149,11 +159,19 @@
 
 			#endif
 
-			#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+			#if defined(ARDUINO_ARCH_ESP32)
+				esp_timer_handle_t _timer;
+			#endif
+
+			#if defined(ARDUINO_ARCH_ESP8266)
 				Ticker _ticker;
 			#endif
+
 	};
 
+	/**
+	 * \brief Declares TimerLib variable to access this library's methods
+	 */
 	extern uTimerLib TimerLib;
 
 #endif

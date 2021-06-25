@@ -10,7 +10,7 @@
  *		* STM32:			Timer3 (3rd timer)
  *		* SAM (Due):		TC3 (Timer1, channel 0)
  *		* ESP8266:			OS Timer, one slot of seven available (Software timer provided by Arduino because ESP8266 has only two hardware timers and one is needed by it normal operation)
- *		* ESP32:			OS Timer, one slot of software timer.
+ *		* ESP32:			OS Hardware Timer.
  *		* SAMD21:			Timer 4, CC0 (TC3). See http://ww1.microchip.com/downloads/en/DeviceDoc/40001882A.pdf
  *		* SAMD51:			Timer 2 (TC1), 16 bits mode (See http://ww1.microchip.com/downloads/en/DeviceDoc/60001507C.pdf
  *
@@ -27,7 +27,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.4
+ * @version 1.6.5
  */
 #if defined(ARDUINO_ARCH_SAM)  && defined(UTIMERLIB_HW_COMPILE)
 #if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
