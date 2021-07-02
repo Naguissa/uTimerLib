@@ -27,7 +27,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.6.5
+ * @version 1.6.6
  */
 #if (defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)) && defined(UTIMERLIB_HW_COMPILE)
 #if	!defined(_uTimerLib_IMP_) && defined(_uTimerLib_cpp_)
@@ -89,7 +89,9 @@
 	 * Note: This is device-dependant
 	 */
 	void uTimerLib::clearTimer() {
-		 esp_timer_delete(_timer);
+		esp_timer_stop(_timer);
+		esp_timer_delete(_timer);
+		_type == UTIMERLIB_TYPE_OFF;
 	}
 
 	/**
