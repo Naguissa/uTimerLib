@@ -64,14 +64,29 @@
 		GCLK_TC/2		   2		 24MHz		0,041666667us	   2730,666666667us;    2,730666666667ms
 		GCLK_TC/4		   4		 12MHz		0,083333333us	   5461,333333333us;    5,461333333333ms
 		GCLK_TC/8		   8		  6MHz		0,166666667us	  10922,666666667us;   10,922666666667ms
-		GCLK_TC/16		  16		  3MHz		0,333333333us	  21845,333333333us;   21,845333333333ms
+		GCLK_TC/16		  16		  3MHz		~0,333333333us	  21845us;   21,845ms
 		GCLK_TC/64		  64		750KHz		1,333333333us	  87381,333311488us;   87,381333311488ms
 		GCLK_TC/256		 256		187,5KHz	5,333333333us	 349525,333311488us;  349,525333311488ms
-		GCLK_TC/1024	1024		46.875Hz	21,333333333us	1398101,333333333us; 1398,101333333333ms; 1,398101333333333s
+		GCLK_TC/1024	1024		46.875kHz	~21,333333333us	1398080us; 1398,08ms; 1,39808s
+
+		In general:
+			freq = 48 MHz / prescaler
+			base_delay = 1 / freq
+			overflow_delay = UINT16_MAX * base_delay
 
 		Will be using:
 			GCLK_TC/16 for us
 			GCLK_TC/1024 for s
+
+		GCLK_TC/16:
+		freq = 48 MHz / prescaler = 48 MHz / 16 = 3 MHz
+		base_delay = 1 / freq = 1 / 3e6 s = 1/3 us ~= 0.333333333 us
+		overflow_delay = UINT16_MAX * base_delay = 65535 / 3 us = 21845 us
+
+		GCLK_TC/1024:
+		freq = 48 MHz / prescaler = 48 MHz / 1024 = 46.875 kHz = 46875 Hz
+		base_delay = 1 / freq = 1 / 46875 s = ~= 21,333333333us
+		overflow_delay = UINT16_MAX * base_delay = 65535 / 46875 s = 1.39808 s
 		*/
 
 		// Enable clock for TC
@@ -87,18 +102,18 @@
 		while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (us > 21845) {
-			__overflows = _overflows = us / 21845.333333333;
-			__remaining = _remaining = ((us - (21845.333333333 * _overflows)) / 0.333333333) + 0.5; // +0.5 is same as round
+			__overflows = _overflows = us / 21845.0;
+			__remaining = _remaining = (us - (21845 * _overflows)) * 3;
 		} else {
 			__overflows = _overflows = 0;
-			__remaining = _remaining = (us / 0.333333333) + 0.5; // +0.5 is same as round
+			__remaining = _remaining = us * 3;
 		}
 
 		if (__overflows == 0) {
 			_loadRemaining();
 			_remaining = 0;
 		} else {
-			_TC->CC[0].reg = 65535;
+			_TC->CC[0].reg = UINT16_MAX;
 			_TC->INTENSET.reg = 0;              // disable all interrupts
 			_TC->INTENSET.bit.OVF = 1;          // enable overfollow
 			// Skip: while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
@@ -126,7 +141,7 @@
 		}
 
 		/*
-		GCLK_TC/1024	1024		46.875Hz	21,333333333us	1398101,333333333us; 1398,101333333333ms; 1,398101333333333s
+		GCLK_TC/1024	1024		46.875kHz	~21,333333333us	1398080us; 1398,08ms; 1,39808s
 		*/
 
 		// Enable clock for TC
@@ -142,18 +157,18 @@
 		while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (s > 1) {
-			__overflows = _overflows = s / 1.398101333333333;
-			__remaining = _remaining = ((s - (1.398101333333333 * _overflows)) / 0.000021333333333) + 0.5; // +0.5 is same as round
+			__overflows = _overflows = s / 1,39808;
+			__remaining = _remaining = ((s - (1.39808 * _overflows)) * 46875) + 0.5; // +0.5 is same as round
 		} else {
 			__overflows = _overflows = 0;
-			__remaining = _remaining = (s / 0.000021333333333) + 0.5; // +0.5 is same as round
+			__remaining = _remaining = s * 46875;
 		}
 
 		if (__overflows == 0) {
 			_loadRemaining();
 			_remaining = 0;
 		} else {
-			_TC->CC[0].reg = 65535;
+			_TC->CC[0].reg = UINT16_MAX;
 			_TC->INTENSET.reg = 0;              // disable all interrupts
 			_TC->INTENSET.bit.OVF = 1;          // enable overfollow
 			// Skip: while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
@@ -229,7 +244,7 @@
 					_TC->INTENSET.reg = 0;              // disable all interrupts
 					_TC->INTENSET.bit.OVF = 0;          // enable overfollow
 					_TC->INTENSET.bit.MC0 = 1;          // disable compare match to CC0
-					_TC->CC[0].reg = 65535;
+					_TC->CC[0].reg = UINT16_MAX;
 				}
 			}
 			_cb();
@@ -238,7 +253,7 @@
 			_TC->INTENSET.reg = 0;              // disable all interrupts
 			_TC->INTENSET.bit.OVF = 0;          // enable overfollow
 			_TC->INTENSET.bit.MC0 = 1;          // disable compare match to CC0
-			_TC->CC[0].reg = 65535;
+			_TC->CC[0].reg = UINT16_MAX;
 		}
 	}
 
