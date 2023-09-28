@@ -1,3 +1,4 @@
 Naguissa - https://github.com/Naguissa
 svlPanelMaker - https://github.com/svlPanelMaker - SAMD21 timing issue fix
 Raf (Raffaele Rialdi) - https://github.com/raffaeler - ESP32 hardware timer (better precission than ticker library)
+Daniel Mohr - https://github.com/daniel-mohr - SAMD21 timing issue fix
