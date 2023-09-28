@@ -97,8 +97,8 @@
 		_TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;
 		while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
 
-		// Set Timer counter Mode to 16 bits + Set TC as normal Normal Frq + Prescaler: GCLK_TC/16
-		_TC->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 + TC_CTRLA_WAVEGEN_NFRQ + TC_CTRLA_PRESCALER_DIV16);
+		// Set Timer counter Mode to 16 bits + Set TC as normal Match Frq + Prescaler: GCLK_TC/16
+		_TC->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 + TC_CTRLA_WAVEGEN_MFRQ + TC_CTRLA_PRESCALER_DIV16);
 		while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (us > 21845) {
@@ -189,7 +189,6 @@
 	 * Note: This is device-dependant
 	 */
 	void uTimerLib::_loadRemaining() {
-		_TC->COUNT.reg = 0;              // Reset to 0
 		_TC->CC[0].reg = _remaining;
 		_TC->INTENSET.reg = 0;              // disable all interrupts
 		_TC->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
@@ -232,15 +231,10 @@
 			if (_type == UTIMERLIB_TYPE_TIMEOUT) {
 				clearTimer();
 			} else if (_type == UTIMERLIB_TYPE_INTERVAL) {
-				if (__overflows == 0) {
-					_remaining = __remaining;
-					_loadRemaining();
-					_remaining = 0;
-				} else {
+				if (__overflows != 0) {
 					_overflows = __overflows;
 					_remaining = __remaining;
 
-					_TC->COUNT.reg = 0;              // Reset to 0
 					_TC->INTENSET.reg = 0;              // disable all interrupts
 					_TC->INTENSET.bit.OVF = 0;          // enable overfollow
 					_TC->INTENSET.bit.MC0 = 1;          // disable compare match to CC0
@@ -249,7 +243,6 @@
 			}
 			_cb();
 		} else if (_overflows > 0) { // Reload for SAMD21
-			_TC->COUNT.reg = 0;              // Reset to 0
 			_TC->INTENSET.reg = 0;              // disable all interrupts
 			_TC->INTENSET.bit.OVF = 0;          // enable overfollow
 			_TC->INTENSET.bit.MC0 = 1;          // disable compare match to CC0
