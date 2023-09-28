@@ -158,7 +158,7 @@
 
 		if (s > 1) {
 			__overflows = _overflows = s / 1,39808;
-			__remaining = _remaining = ((s - (1.39808 * _overflows)) * 46875) + 0.5; // +0.5 is same as round
+			__remaining = _remaining = ((s * 100000) % 139808) * 480 / 1024; // for integer s this is always an integer
 		} else {
 			__overflows = _overflows = 0;
 			__remaining = _remaining = s * 46875;
