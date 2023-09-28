@@ -52,7 +52,7 @@
 
 		Prescaler:
 		Prescalers: GCLK_TC, GCLK_TC/2, GCLK_TC/4, GCLK_TC/8, GCLK_TC/16, GCLK_TC/64, GCLK_TC/256, GCLK_TC/1024
-		Base frequency: 84MHz
+		Base frequency: 48MHz
 
 		We will use TCC2, as there're some models with only 3 timers (regular models have 5 TCs)
 
@@ -60,13 +60,13 @@
 
 
 		Name			Prescaler	Freq		Base Delay		Overflow delay
-		GCLK_TC			   1		 48MHz		0,020833333us	   1365,333333333us;    1,365333333333ms
-		GCLK_TC/2		   2		 24MHz		0,041666667us	   2730,666666667us;    2,730666666667ms
-		GCLK_TC/4		   4		 12MHz		0,083333333us	   5461,333333333us;    5,461333333333ms
-		GCLK_TC/8		   8		  6MHz		0,166666667us	  10922,666666667us;   10,922666666667ms
+		GCLK_TC			   1		 48MHz		~0,020833333us	   1365,3125us;    1,3653125ms
+		GCLK_TC/2		   2		 24MHz		~0,041666667us	   2730,625us;    2,730625ms
+		GCLK_TC/4		   4		 12MHz		~0,083333333us	   5461,25us;    5,46125ms
+		GCLK_TC/8		   8		  6MHz		~0,166666667us	  10922,5us;   10,9225ms
 		GCLK_TC/16		  16		  3MHz		~0,333333333us	  21845us;   21,845ms
-		GCLK_TC/64		  64		750KHz		1,333333333us	  87381,333311488us;   87,381333311488ms
-		GCLK_TC/256		 256		187,5KHz	5,333333333us	 349525,333311488us;  349,525333311488ms
+		GCLK_TC/64		  64		750KHz		~1,333333333us	  87380us;   87,380ms
+		GCLK_TC/256		 256		187,5KHz	~5,333333333us	 349520us;  349,52ms
 		GCLK_TC/1024	1024		46.875kHz	~21,333333333us	1398080us; 1398,08ms; 1,39808s
 
 		In general:
