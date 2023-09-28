@@ -85,7 +85,7 @@
 
 		GCLK_TC/1024:
 		freq = 48 MHz / prescaler = 48 MHz / 1024 = 46.875 kHz = 46875 Hz
-		base_delay = 1 / freq = 1 / 46875 s = ~= 21,333333333us
+		base_delay = 1 / freq = 1 / 46875 s = ~= 21.333333333us
 		overflow_delay = UINT16_MAX * base_delay = 65535 / 46875 s = 1.39808 s
 		*/
 
@@ -152,16 +152,16 @@
 		_TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;
 		while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
 
-		// Set Timer counter Mode to 16 bits + Set TC as normal Normal Frq + Prescaler: GCLK_TC/1024
-		_TC->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 + TC_CTRLA_WAVEGEN_NFRQ + TC_CTRLA_PRESCALER_DIV1024);
+		// Set Timer counter Mode to 16 bits + Set TC as normal Match Frq + Prescaler: GCLK_TC/1024
+		_TC->CTRLA.reg |= (TC_CTRLA_MODE_COUNT16 + TC_CTRLA_WAVEGEN_MFRQ + TC_CTRLA_PRESCALER_DIV1024);
 		while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (s > 1) {
 			__overflows = _overflows = s / 1.39808;
-			__remaining = _remaining = ((s * 100000) % 139808) * 480 / 1024; // for integer s this is always an integer
+			__remaining = _remaining = ((s * 100000) % 139808) * 480 / 1024 - 1; // for integer s this is always an integer
 		} else {
 			__overflows = _overflows = 0;
-			__remaining = _remaining = s * 46875;
+			__remaining = _remaining = s * 46875 - 1;
 		}
 
 		if (__overflows == 0) {
