@@ -103,10 +103,10 @@
 
 		if (us > 21845) {
 			__overflows = _overflows = us / 21845.0;
-			__remaining = _remaining = (us - (21845 * _overflows)) * 3;
+			__remaining = _remaining = (us - (21845 * _overflows)) * 3 - 1;
 		} else {
 			__overflows = _overflows = 0;
-			__remaining = _remaining = us * 3;
+			__remaining = _remaining = us * 3 - 1;
 		}
 
 		if (__overflows == 0) {
