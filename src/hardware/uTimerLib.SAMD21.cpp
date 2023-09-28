@@ -157,7 +157,7 @@
 		while (_TC->STATUS.bit.SYNCBUSY == 1); // sync
 
 		if (s > 1) {
-			__overflows = _overflows = s / 1,39808;
+			__overflows = _overflows = s / 1.39808;
 			__remaining = _remaining = ((s * 100000) % 139808) * 480 / 1024; // for integer s this is always an integer
 		} else {
 			__overflows = _overflows = 0;
