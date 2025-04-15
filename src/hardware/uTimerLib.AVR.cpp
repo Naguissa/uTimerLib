@@ -27,7 +27,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.7.1
+ * @version 1.7.2
  */
 
 #if (defined(__AVR_ATmega32U4__) || defined(ARDUINO_ARCH_AVR)) && !defined(ARDUINO_attiny) && defined(UTIMERLIB_HW_COMPILE)
@@ -51,7 +51,7 @@
 		unsigned char CSMask = 0;
 		// For this notes, we asume 16MHz CPU. We recalculate 'us' if not:
 		if (F_CPU != 16000000) {
-			us = F_CPU / 16000000 * us;
+			us = (F_CPU / 1000) * us / 16000;
 		}
 
 		// Leonardo and other 32U4 boards
@@ -180,7 +180,7 @@
 		unsigned char CSMask = 0;
 		// For this notes, we asume 16MHz CPU. We recalculate 's' if not:
 		if (F_CPU != 16000000) {
-			s = F_CPU / 16000000 * s;
+			s = (F_CPU / 1000) * s / 16000;
 		}
 
 		// Leonardo and other 32U4 boards
