@@ -11,9 +11,10 @@
 
 volatile unsigned long int prevMillis = 0;
 volatile unsigned long int actMillis = 0;
+volatile bool trigger = false;
 
 void timed_function() {
-	Serial.println(actMillis - prevMillis);
+	trigger = true;
 }
 
 void setup() {
@@ -23,5 +24,10 @@ void setup() {
 }
 
 void loop() {
+	if (trigger) {
+		trigger = false;
+		Serial.println(actMillis - prevMillis);
+		prevMillis = actMillis;
+	}
 	actMillis = millis();
 }

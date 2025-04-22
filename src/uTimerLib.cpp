@@ -27,7 +27,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.7.3
+ * @version 1.7.4
  */
 
 // # if !defined(_uTimerLib_cpp_) && defined(_uTimerLib_IMP_)
@@ -44,12 +44,7 @@
     /**
      * \brief Constructor
      */
-    uTimerLib::uTimerLib() {
-            #ifdef _VARIANT_ARDUINO_STM32_
-                    _instance = this;
-                    clearTimer();
-            #endif
-    }
+    uTimerLib::uTimerLib() {}
 
     /**
      * \brief Attaches a callback function to be executed each us microseconds
@@ -58,10 +53,15 @@
      * @param	us		Interval in microseconds
      */
     void uTimerLib::setInterval_us(void (* cb)(), unsigned long int us) {
-            clearTimer();
+        clearTimer();
+		#if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
+            uTimerLib::_cb = cb;
+            uTimerLib::_type = UTIMERLIB_TYPE_INTERVAL;
+		#else
             _cb = cb;
             _type = UTIMERLIB_TYPE_INTERVAL;
-            _attachInterrupt_us(us);
+        #endif
+        _attachInterrupt_us(us);
     }
 
 
@@ -72,10 +72,15 @@
      * @param	us		Timeout in microseconds
      */
     void uTimerLib::setTimeout_us(void (* cb)(), unsigned long int us) {
-            clearTimer();
+        clearTimer();
+		#if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
+            uTimerLib::_cb = cb;
+            uTimerLib::_type = UTIMERLIB_TYPE_TIMEOUT;
+		#else
             _cb = cb;
             _type = UTIMERLIB_TYPE_TIMEOUT;
-            _attachInterrupt_us(us);
+        #endif
+        _attachInterrupt_us(us);
     }
 
 
@@ -86,10 +91,15 @@
      * @param	s		Interval in seconds
      */
     void uTimerLib::setInterval_s(void (* cb)(), unsigned long int s) {
-            clearTimer();
+        clearTimer();
+		#if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
+            uTimerLib::_cb = cb;
+            uTimerLib::_type = UTIMERLIB_TYPE_INTERVAL;
+		#else
             _cb = cb;
             _type = UTIMERLIB_TYPE_INTERVAL;
-            _attachInterrupt_s(s);
+        #endif
+        _attachInterrupt_s(s);
     }
 
 
@@ -100,10 +110,15 @@
      * @param	s		Timeout in seconds
      */
     void uTimerLib::setTimeout_s(void (* cb)(), unsigned long int s) {
-            clearTimer();
+        clearTimer();
+		#if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
+            uTimerLib::_cb = cb;
+            uTimerLib::_type = UTIMERLIB_TYPE_TIMEOUT;
+		#else
             _cb = cb;
             _type = UTIMERLIB_TYPE_TIMEOUT;
-            _attachInterrupt_s(s);
+        #endif
+        _attachInterrupt_s(s);
     }
 
     #define UTIMERLIB_HW_COMPILE

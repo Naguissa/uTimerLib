@@ -27,7 +27,7 @@
  * @see <a href="https://github.com/Naguissa/uTimerLib">https://github.com/Naguissa/uTimerLib</a>
  * @see <a href="https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html">https://www.foroelectro.net/librerias-arduino-ide-f29/utimerlib-libreria-arduino-para-eventos-temporizad-t191.html</a>
  * @see <a href="mailto:naguissa@foroelectro.net">naguissa@foroelectro.net</a>
- * @version 1.7.3
+ * @version 1.7.4
  */
 /** \file uTimerLib.h
  *   \brief uTimerLib header file
@@ -90,26 +90,25 @@
 			 */
 			void clearTimer();
 
-			/**
-			 * \brief Internal intermediate function to control timer interrupts
-			 *
-			 * As timers doesn't give us enougth flexibility for large timings,
-			 * this function implements oferflow control to offer user desired timings.
-			 */
-
-			void _interrupt();
 
 			#if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
-				// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
-				#ifdef BOARD_NAME
-					static callback_function_t interrupt();
-
-				// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
-				#else
-					static void interrupt();
-				#endif
+			    volatile static unsigned long int _overflows;
+			    volatile static unsigned long int __overflows;
+			    volatile static unsigned long int _remaining;
+			    volatile static unsigned long int __remaining;
+			    static void (*_cb)();
+				static void _interrupt();
+    			volatile static unsigned char _type;
+			#else
+			    /**
+			     * \brief Internal intermediate function to control timer interrupts
+			     *
+			     * As timers doesn't give us enougth flexibility for large timings,
+			     * this function implements oferflow control to offer user desired timings.
+			     */
+			    void _interrupt();					
 			#endif
-
+					
 			#if defined(ARDUINO_ARCH_ESP32)
 				static void interrupt(void* arg);
 			#endif
@@ -130,34 +129,32 @@
 		private:
 			static uTimerLib *_instance;
 
-			unsigned long int _overflows = 0;
-			unsigned long int __overflows = 0;
-			#ifdef ARDUINO_ARCH_AVR
-				unsigned char _remaining = 0;
-				unsigned char __remaining = 0;
-			#else
-				unsigned long int _remaining = 0;
-				unsigned long int __remaining = 0;
-			#endif
-			void (*_cb)() = NULL;
-			unsigned char _type = UTIMERLIB_TYPE_OFF;
-
-			void _loadRemaining();
-
-			void _attachInterrupt_us(unsigned long int);
-			void _attachInterrupt_s(unsigned long int);
-
 			#if defined(_VARIANT_ARDUINO_STM32_) || defined(ARDUINO_ARCH_STM32)
 				bool _toInit = true;
 
 				// ST's Arduino Core STM32, https://github.com/stm32duino/Arduino_Core_STM32
 				#ifdef BOARD_NAME
 					 HardwareTimer *Timer3 = new HardwareTimer(TIM3);
-
-				// Roger Clark Arduino STM32, https://github.com/rogerclarkmelbourne/Arduino_STM32
-				#endif
-
+                #endif
+			#else
+			    volatile unsigned long int _overflows = 0;
+			    volatile unsigned long int __overflows = 0;
+			    #ifdef ARDUINO_ARCH_AVR
+				    volatile unsigned char _remaining = 0;
+				    volatile unsigned char __remaining = 0;
+			    #else
+				    volatile unsigned long int _remaining = 0;
+				    volatile unsigned long int __remaining = 0;
+			    #endif
+			    void (*_cb)() = NULL;
+			    volatile unsigned char _type = UTIMERLIB_TYPE_OFF;
 			#endif
+
+			void _loadRemaining();
+
+			void _attachInterrupt_us(unsigned long int);
+			void _attachInterrupt_s(unsigned long int);
+
 
 			#if defined(ARDUINO_ARCH_ESP32)
 				esp_timer_handle_t _timer;
