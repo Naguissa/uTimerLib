@@ -10,7 +10,7 @@
 #include "uTimerLib.h"
 
 volatile unsigned long int prevMillis = 0;
-volatile unsigned long int actMilis = 0;
+volatile unsigned long int actMillis = 0;
 volatile bool trigger = false;
 
 void timed_function() {
